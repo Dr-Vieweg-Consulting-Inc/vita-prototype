@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch, publishReport } from "../../reducer";
+// import { publishReport } from "../redux/actions";
 import {
   Container,
   Typography,
@@ -12,61 +15,33 @@ import {
   Paper,
   Select,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import jsPDF from "jspdf";
+// import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
 
-interface Entity {
-  id: number;
-  name: string;
-  type: string;
-  industry: string;
-  country: string;
-  contact_email: string;
-}
-
-interface ESGData {
-  id: number;
-  entityId: number;
-  category: string;
-  value: string;
-  unit: string;
-  reportingPeriod: string;
-  standard?: string;
-  reviewed?: boolean;
-}
-
-interface PublishedReport {
-  id: number;
-  entityName: string;
-  category: string;
-  value: string;
-  reportingPeriod: string;
-  standard: string;
-  publishedUrl: string;
-  timestamp: string;
-}
-
-const EntityConfig: React.FC = () => {
-  const [entities, setEntities] = useState<Entity[]>([
-    {
-      id: 1,
-      name: "Company A",
-      type: "Corporate",
-      industry: "Tech",
-      country: "USA",
-      contact_email: "contact@companya.com",
-    },
-  ]);
-  const [esgData, setEsgData] = useState<ESGData[]>([]);
-  const [publishedReports, setPublishedReports] = useState<PublishedReport[]>(
-    []
+const Publication: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const entities = useSelector((state: RootState) => state.entities);
+  const esgData = useSelector((state: RootState) => state.esgData);
+  const publishedReports = useSelector(
+    (state: RootState) => state.publishedReports
   );
+  const currentUser = useSelector((state: RootState) => state.currentUser);
   const [selectedReport, setSelectedReport] = useState<number>(0);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const handlePublishReport = () => {
+    if (currentUser?.role !== "Admin") return;
+
     const reportToPublish = esgData.find((data) => data.id === selectedReport);
     if (!reportToPublish) return;
 
-    const newPublishedReport: PublishedReport = {
+    const newPublishedReport = {
       id: publishedReports.length + 1,
       entityName:
         entities.find((e) => e.id === reportToPublish.entityId)?.name ||
@@ -81,7 +56,62 @@ const EntityConfig: React.FC = () => {
       timestamp: new Date().toLocaleString(),
     };
 
-    setPublishedReports([...publishedReports, newPublishedReport]);
+    dispatch(publishReport(newPublishedReport));
+    setOpenSnackbar(true);
+  };
+
+  const handleExportCSV = () => {
+    const csv = Papa.unparse(publishedReports);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "Published_Reports.csv");
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Published ESG Reports", 20, 10);
+    // autoTable({
+    //   head: [
+    //     [
+    //       "Entity",
+    //       "Category",
+    //       "Value",
+    //       "Reporting Period",
+    //       "Standard",
+    //       "Timestamp",
+    //     ],
+    //   ],
+    //   body: publishedReports.map((report) => [
+    //     report.entityName,
+    //     report.category,
+    //     report.value,
+    //     report.reportingPeriod,
+    //     report.standard,
+    //     report.timestamp,
+    //   ]),
+    // });
+
+    autoTable(doc, {
+      head: [
+        [
+          "Entity",
+          "Category",
+          "Value",
+          "Reporting Period",
+          "Standard",
+          "Timestamp",
+        ],
+      ],
+      body: publishedReports.map((report) => [
+        report.entityName,
+        report.category,
+        report.value,
+        report.reportingPeriod,
+        report.standard,
+        report.timestamp,
+      ]),
+    });
+
+    doc.save("Published_Reports.pdf");
   };
 
   return (
@@ -89,37 +119,51 @@ const EntityConfig: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Publication
       </Typography>
-      <Typography variant="h6">Publish ESG Report</Typography>
+      {currentUser?.role === "Admin" && (
+        <>
+          <Typography variant="h6">Publish ESG Report</Typography>
+          <Select
+            fullWidth
+            value={selectedReport}
+            onChange={(e) => setSelectedReport(Number(e.target.value))}
+          >
+            <MenuItem value={0} disabled>
+              Select Report to Publish
+            </MenuItem>
+            {esgData.map((data) => (
+              <MenuItem key={data.id} value={data.id}>
+                {`${data.category} - ${data.reportingPeriod}`}
+              </MenuItem>
+            ))}
+          </Select>
 
-      <Select
-        fullWidth
-        value={selectedReport}
-        onChange={(e) => setSelectedReport(Number(e.target.value))}
-      >
-        <MenuItem value={0} disabled>
-          Select Report to Publish
-        </MenuItem>
-        {esgData.map((data) => (
-          <MenuItem
-            key={data.id}
-            value={data.id}
-          >{`${data.category} - ${data.reportingPeriod}`}</MenuItem>
-        ))}
-      </Select>
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handlePublishReport}
-        sx={{ mt: 2 }}
-      >
-        Publish Report
-      </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handlePublishReport}
+            sx={{ mt: 2 }}
+          >
+            Publish Report
+          </Button>
+        </>
+      )}
 
       <Typography variant="h6" sx={{ mt: 4 }}>
         Published Reports
       </Typography>
-      <TableContainer component={Paper}>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleExportPDF}
+        sx={{ mr: 2 }}
+      >
+        Export as PDF
+      </Button>
+      <Button variant="contained" color="success" onClick={handleExportCSV}>
+        Export as CSV
+      </Button>
+
+      <TableContainer component={Paper} sx={{ mt: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -155,8 +199,18 @@ const EntityConfig: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert severity="success" onClose={() => setOpenSnackbar(false)}>
+          Report published successfully!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
 
-export default EntityConfig;
+export default Publication;
