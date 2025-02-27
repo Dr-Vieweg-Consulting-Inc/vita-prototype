@@ -1,8 +1,13 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../../reducer";
 import {
   Container,
   Typography,
-  TextField,
+  Grid,
+  Paper,
+  Select,
+  MenuItem,
   Button,
   Table,
   TableBody,
@@ -10,127 +15,144 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Select,
-  MenuItem,
-  Input,
-  Checkbox,
 } from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
 
-interface Entity {
-  id: number;
-  name: string;
-  type: string;
-  industry: string;
-  country: string;
-  contact_email: string;
-}
+const ReportingEngine: React.FC = () => {
+  const esgData = useSelector((state: RootState) => state.esgData);
+  const entities = useSelector((state: RootState) => state.entities);
 
-interface ESGData {
-  id: number;
-  entityId: number;
-  category: string;
-  value: string;
-  unit: string;
-  reportingPeriod: string;
-  proofFile?: File | null;
-  externalLink?: string;
-  standard?: string;
-  reviewed?: boolean;
-}
+  const [selectedEntity, setSelectedEntity] = useState<number>(0);
+  const [selectedStandard, setSelectedStandard] = useState<string>("");
+  const [filteredReports, setFilteredReports] = useState(esgData);
 
-const EntityConfig: React.FC = () => {
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [esgData, setEsgData] = useState<ESGData[]>([]);
-  const [newEsgData, setNewEsgData] = useState<Omit<ESGData, "id">>({
-    entityId: 0,
-    category: "",
-    value: "",
-    unit: "",
-    reportingPeriod: "",
-    proofFile: null,
-    externalLink: "",
-    standard: "",
-    reviewed: false,
-  });
-
-  const handleAddEsgData = () => {
-    if (
-      !newEsgData.category ||
-      !newEsgData.value ||
-      newEsgData.entityId === 0 ||
-      !newEsgData.reportingPeriod
-    )
-      return;
-    setEsgData([...esgData, { id: esgData.length + 1, ...newEsgData }]);
-    setNewEsgData({
-      entityId: 0,
-      category: "",
-      value: "",
-      unit: "",
-      reportingPeriod: "",
-      proofFile: null,
-      externalLink: "",
-      standard: "",
-      reviewed: false,
-    });
-  };
-
-  const handleReviewToggle = (id: number) => {
-    setEsgData(
-      esgData.map((data) =>
-        data.id === id ? { ...data, reviewed: !data.reviewed } : data
-      )
+  const handleGenerateReport = () => {
+    const reports = esgData.filter(
+      (data) =>
+        (selectedEntity === 0 || data.entityId === selectedEntity) &&
+        (selectedStandard === "" || data.standard === selectedStandard)
     );
+    setFilteredReports(reports);
   };
+
+  // Aggregate data for visualization
+  const categoryCounts = esgData.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + parseFloat(item.value);
+    return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.keys(categoryCounts).map((category) => ({
+    name: category,
+    value: categoryCounts[category],
+  }));
+
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#ffbb28"];
 
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Data Consolidation
+        ESG Reporting Dashboard
       </Typography>
-      <Typography variant="h6">Consolidate ESG Data</Typography>
+
+      {/* Report Filters */}
       <Select
         fullWidth
-        value={newEsgData.entityId}
-        onChange={(e) =>
-          setNewEsgData({ ...newEsgData, entityId: Number(e.target.value) })
-        }
+        value={selectedEntity}
+        onChange={(e) => setSelectedEntity(Number(e.target.value))}
       >
-        <MenuItem value={0} disabled>
-          Select Entity
-        </MenuItem>
+        <MenuItem value={0}>All Entities</MenuItem>
         {entities.map((entity) => (
           <MenuItem key={entity.id} value={entity.id}>
             {entity.name}
           </MenuItem>
         ))}
       </Select>
+
       <Select
         fullWidth
-        value={newEsgData.standard}
-        onChange={(e) =>
-          setNewEsgData({ ...newEsgData, standard: e.target.value })
-        }
+        value={selectedStandard}
+        onChange={(e) => setSelectedStandard(e.target.value)}
         margin="normal"
       >
-        <MenuItem value="">Select Reporting Standard</MenuItem>
+        <MenuItem value="">All Reporting Standards</MenuItem>
         <MenuItem value="CSRD">CSRD</MenuItem>
         <MenuItem value="ESRS">ESRS</MenuItem>
         <MenuItem value="ISSB">ISSB</MenuItem>
         <MenuItem value="SEC">SEC</MenuItem>
       </Select>
+
       <Button
         variant="contained"
         color="primary"
-        onClick={handleAddEsgData}
+        onClick={handleGenerateReport}
         sx={{ mt: 2 }}
       >
-        Add ESG Data for Consolidation
+        Generate Report
       </Button>
 
+      {/* Data Visualization */}
+      <Grid container spacing={3} sx={{ mt: 4 }}>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3}>
+            <Typography variant="h6" align="center" sx={{ pt: 2 }}>
+              ESG Data Distribution
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3}>
+            <Typography variant="h6" align="center" sx={{ pt: 2 }}>
+              ESG Category Breakdown
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={100}
+                  label
+                >
+                  {chartData.map((_, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Report Table */}
       <Typography variant="h6" sx={{ mt: 4 }}>
-        Consolidated ESG Data
+        Generated Reports
       </Typography>
       <TableContainer component={Paper}>
         <Table>
@@ -142,11 +164,10 @@ const EntityConfig: React.FC = () => {
               <TableCell>Unit</TableCell>
               <TableCell>Reporting Period</TableCell>
               <TableCell>Standard</TableCell>
-              <TableCell>Reviewed</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {esgData.map((data) => (
+            {filteredReports.map((data) => (
               <TableRow key={data.id}>
                 <TableCell>
                   {entities.find((e) => e.id === data.entityId)?.name ||
@@ -157,12 +178,6 @@ const EntityConfig: React.FC = () => {
                 <TableCell>{data.unit}</TableCell>
                 <TableCell>{data.reportingPeriod}</TableCell>
                 <TableCell>{data.standard || "None"}</TableCell>
-                <TableCell>
-                  <Checkbox
-                    checked={data.reviewed}
-                    onChange={() => handleReviewToggle(data.id)}
-                  />
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -172,4 +187,4 @@ const EntityConfig: React.FC = () => {
   );
 };
 
-export default EntityConfig;
+export default ReportingEngine;
