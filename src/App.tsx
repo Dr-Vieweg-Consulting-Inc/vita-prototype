@@ -1,7 +1,7 @@
 // import { useState } from "react";
 // import reactLogo from "./assets/react.svg";
 // import viteLogo from "/vite.svg";
-// import "./App.css";
+import "./App.css";
 // import Audit from "./pages/Auditing";
 // import Authentication from "./pages/Authentication";
 // import Dashboard from "./pages/Dashboard";
@@ -125,12 +125,16 @@ import DataConsolidation from "./pages/DataConsolidation";
 import ReportingEngine from "./pages/ReportingEngine";
 import Auditing from "./pages/Auditing";
 import Publication from "./pages/Publication";
+import AuthForms from "./pages/AuthForms";
 
 const App: React.FC = () => {
   return (
     // <Provider store={store}>
     <Router>
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        sx={{ width: "100vw", backgroundColor: "#1976d2" }}
+      >
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             ESG Reporting Accelerator
@@ -158,7 +162,7 @@ const App: React.FC = () => {
           </Button>
         </Toolbar>
       </AppBar>
-      <Container>
+      <Container sx={{ width: "100%" }}>
         <Routes>
           <Route path="/entity-config" element={<EntityConfig />} />
           <Route path="/procedures" element={<Procedures />} />
@@ -175,6 +179,7 @@ const App: React.FC = () => {
               </Typography>
             }
           />
+          <Route path="/auth" element={<AuthForms />} />
         </Routes>
       </Container>
     </Router>

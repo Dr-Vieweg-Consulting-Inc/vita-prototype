@@ -1,6 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
 
+import user from "./user";
+
 // Define initial state types
 interface Entity {
   id: number;
@@ -228,17 +230,17 @@ const currentUserReducer = (
 };
 
 // Combine reducers
-const rootReducer = combineReducers({
-  entities: entitiesReducer,
-  esgData: esgDataReducer,
-  publishedReports: publishedReportsReducer,
-  users: usersReducer,
-  pendingTasks: pendingTasksReducer,
-  currentUser: currentUserReducer,
+export const reducer = combineReducers({
+  // entities: entitiesReducer,
+  // esgData: esgDataReducer,
+  // publishedReports: publishedReportsReducer,
+  user,
+  // pendingTasks: pendingTasksReducer,
+  // currentUser: currentUserReducer,
 });
 
 // Create store
-const store = configureStore({ reducer: rootReducer });
+const store = configureStore({ reducer });
 
 export type AppDispatch = typeof store.dispatch;
 export default store;

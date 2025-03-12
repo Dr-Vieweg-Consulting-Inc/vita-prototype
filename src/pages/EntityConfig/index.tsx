@@ -177,7 +177,7 @@ const EntityConfig: React.FC = () => {
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Entity Configuration
+        Client Configuration
       </Typography>
       <Typography variant="h6">Add New Entity</Typography>
       <TextField

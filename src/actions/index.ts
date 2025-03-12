@@ -128,3 +128,5 @@ export const setCurrentUser = (user: User): SetCurrentUserAction => ({
   type: SET_CURRENT_USER,
   payload: user,
 });
+
+export * from "./user";

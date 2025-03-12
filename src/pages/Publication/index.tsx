@@ -17,10 +17,19 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  Grid,
 } from "@mui/material";
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import jsPDF from "jspdf";
-// import "jspdf-autotable";
-import autoTable from "jspdf-autotable";
+import "jspdf-autotable";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
 
@@ -60,59 +69,18 @@ const Publication: React.FC = () => {
     setOpenSnackbar(true);
   };
 
-  const handleExportCSV = () => {
-    const csv = Papa.unparse(publishedReports);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "Published_Reports.csv");
-  };
-
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Published ESG Reports", 20, 10);
-    // autoTable({
-    //   head: [
-    //     [
-    //       "Entity",
-    //       "Category",
-    //       "Value",
-    //       "Reporting Period",
-    //       "Standard",
-    //       "Timestamp",
-    //     ],
-    //   ],
-    //   body: publishedReports.map((report) => [
-    //     report.entityName,
-    //     report.category,
-    //     report.value,
-    //     report.reportingPeriod,
-    //     report.standard,
-    //     report.timestamp,
-    //   ]),
-    // });
-
-    autoTable(doc, {
-      head: [
-        [
-          "Entity",
-          "Category",
-          "Value",
-          "Reporting Period",
-          "Standard",
-          "Timestamp",
-        ],
-      ],
-      body: publishedReports.map((report) => [
-        report.entityName,
-        report.category,
-        report.value,
-        report.reportingPeriod,
-        report.standard,
-        report.timestamp,
-      ]),
-    });
-
-    doc.save("Published_Reports.pdf");
-  };
+  const doubleMaterialityData =
+    esgData.length > 0
+      ? esgData.map((data, index) => ({
+          x: (index + 1) * 10, // Financial Materiality (Placeholder scale)
+          y: (index + 1) * 15, // Impact Materiality (Placeholder scale)
+          name: data.category,
+        }))
+      : [
+          { x: 20, y: 40, name: "Carbon Emissions" },
+          { x: 50, y: 80, name: "Water Usage" },
+          { x: 30, y: 60, name: "Energy Efficiency" },
+        ];
 
   return (
     <Container>
@@ -149,56 +117,35 @@ const Publication: React.FC = () => {
       )}
 
       <Typography variant="h6" sx={{ mt: 4 }}>
-        Published Reports
+        Double Materiality Analysis
       </Typography>
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleExportPDF}
-        sx={{ mr: 2 }}
-      >
-        Export as PDF
-      </Button>
-      <Button variant="contained" color="success" onClick={handleExportCSV}>
-        Export as CSV
-      </Button>
-
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Entity</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell>Value</TableCell>
-              <TableCell>Reporting Period</TableCell>
-              <TableCell>Standard</TableCell>
-              <TableCell>Published URL</TableCell>
-              <TableCell>Timestamp</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {publishedReports.map((report) => (
-              <TableRow key={report.id}>
-                <TableCell>{report.entityName}</TableCell>
-                <TableCell>{report.category}</TableCell>
-                <TableCell>{report.value}</TableCell>
-                <TableCell>{report.reportingPeriod}</TableCell>
-                <TableCell>{report.standard}</TableCell>
-                <TableCell>
-                  <a
-                    href={report.publishedUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View Report
-                  </a>
-                </TableCell>
-                <TableCell>{report.timestamp}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Grid container justifyContent="center" sx={{ mt: 2 }}>
+        <Paper elevation={3} sx={{ width: "100%", height: 400, padding: 2 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                type="number"
+                dataKey="x"
+                name="Financial Impact"
+                unit="%"
+              />
+              <YAxis
+                type="number"
+                dataKey="y"
+                name="Social/Environmental Impact"
+                unit="%"
+              />
+              <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+              <Scatter
+                name="ESG Topics"
+                data={doubleMaterialityData}
+                fill="#8884d8"
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </Paper>
+      </Grid>
 
       <Snackbar
         open={openSnackbar}
