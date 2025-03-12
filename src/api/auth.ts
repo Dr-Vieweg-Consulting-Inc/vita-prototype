@@ -1,4 +1,4 @@
-import { LoginResponse } from "../types/api";
+import { APIResponse, LoginResponse } from "../types/api";
 
 const API_BASE_URL =
   import.meta.env.MODE === "development"
@@ -9,7 +9,10 @@ const API_BASE_URL =
 
 const REQUEST_TIMEOUT = 10000;
 
-async function postRequest<T>(path: string, data: any): Promise<T> {
+async function postRequest<T extends APIResponse>(
+  path: string,
+  data: any
+): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
@@ -29,7 +32,7 @@ async function postRequest<T>(path: string, data: any): Promise<T> {
       throw new Error(errorData.error || "Login failed");
     }
 
-    return response.json() as T;
+    return (await response.json()) as T;
   } catch (error: any) {
     if (error.name === "AbortError") {
       throw new Error("Request timed out. Please try again.");

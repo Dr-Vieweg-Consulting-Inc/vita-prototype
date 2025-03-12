@@ -1,6 +1,9 @@
 import { Entity } from "./state";
 
-export interface LoginResponse {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface APIResponse {}
+
+export interface LoginResponse extends APIResponse {
   id: number;
   name: string;
   email: string;

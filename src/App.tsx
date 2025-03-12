@@ -175,7 +175,7 @@ const App: React.FC = () => {
             path="/"
             element={
               <Typography variant="h4">
-                Welcome to ESG Reporting Accelerator
+                Welcome to ESG Reporting Accelerator Tool
               </Typography>
             }
           />
