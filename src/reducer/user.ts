@@ -4,13 +4,15 @@ import { LoginResponse } from "../types/api";
 
 const initialState: UserState = {
   id: null,
-  name: "",
+  firstName: "",
+  lastName: "",
   email: "",
   entities: [],
   isAuthenticated: false,
   token: null,
   loading: false,
   error: null,
+  status: null,
 };
 
 const userSlice = createSlice({
@@ -36,6 +38,30 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    registerRequest: (
+      state,
+      _: PayloadAction<{
+        firstName: string;
+        lastName: string;
+        email: string;
+        password: string;
+      }>
+    ) => {
+      state.loading = true;
+      state.error = null;
+    },
+    registerSuccess: (state, action: PayloadAction<LoginResponse>) => {
+      return {
+        ...state,
+        ...action.payload,
+        isAuthenticated: true,
+        loading: false,
+      };
+    },
+    registerFailure: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
     logout: () => {
       //   localStorage.removeItem("user"); // Not sure how it works
       return { ...initialState };
@@ -43,7 +69,14 @@ const userSlice = createSlice({
   },
 });
 
-export const { loginRequest, loginSuccess, loginFailure, logout } =
-  userSlice.actions;
+export const {
+  loginRequest,
+  loginSuccess,
+  loginFailure,
+  registerRequest,
+  registerSuccess,
+  registerFailure,
+  logout,
+} = userSlice.actions;
 
 export default userSlice.reducer;

@@ -7,12 +7,13 @@ import {
   Box,
   Link,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-// import { RootState } from "../../redux/store";
-// import { loginRequest, logout } from "../../redux/slices/userSlice";
+import { loginRequest, registerRequest, logout } from "../../actions";
 import { RootState } from "../../types";
-import { loginRequest, logout } from "../../actions";
+// import { RootState } from "../../redux/store";
+// import { loginRequest, signupRequest, logout } from "../../redux/slices/userSlice";
 
 enum AuthType {
   Login = "login",
@@ -22,31 +23,32 @@ enum AuthType {
 
 const AuthForm: React.FC = () => {
   const [authType, setAuthType] = useState<AuthType>(AuthType.Login);
+  const [firstName, setFirstName] = useState<string>(""); // 🔹 First Name
+  const [lastName, setLastName] = useState<string>(""); // 🔹 Last Name
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const dispatch = useDispatch();
-  const { isAuthenticated, name, error } = useSelector(
-    (state: RootState) => state.user
-  );
+  const {
+    isAuthenticated,
+    firstName: userFirstName,
+    lastName: userLastName,
+    error,
+    loading,
+  } = useSelector((state: RootState) => state.user);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // TODO: Handle register and forgot password
-    switch (authType) {
-      case AuthType.Login:
-        dispatch(loginRequest({ email, password }));
-        break;
-      case AuthType.SignUp:
-        // TODO
-        break;
-      case AuthType.ForgotPassword:
-        // TODO
-        break;
-      default:
-        break;
+    if (authType === AuthType.Login) {
+      dispatch(loginRequest({ email, password }));
+    } else if (authType === AuthType.SignUp) {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+      dispatch(registerRequest({ firstName, lastName, email, password }));
     }
   };
 
@@ -62,7 +64,7 @@ const AuthForm: React.FC = () => {
         {isAuthenticated ? (
           <>
             <Typography variant="h4" gutterBottom>
-              Welcome, {name}!
+              Welcome, {userFirstName} {userLastName}!
             </Typography>
             <Button
               variant="contained"
@@ -83,7 +85,7 @@ const AuthForm: React.FC = () => {
                 : "Forgot Password"}
             </Typography>
 
-            {/* 🔹 Show Error Message if Login Fails */}
+            {/* 🔹 Show Error Message if Login or Sign-Up Fails */}
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
@@ -91,6 +93,33 @@ const AuthForm: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit}>
+              {authType === AuthType.SignUp && (
+                <>
+                  <TextField
+                    label="First Name"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                  <TextField
+                    label="Last Name"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </>
+              )}
+
               <TextField
                 label="Email"
                 variant="outlined"
@@ -100,6 +129,7 @@ const AuthForm: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={loading}
               />
 
               {authType !== AuthType.ForgotPassword && (
@@ -112,6 +142,7 @@ const AuthForm: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               )}
 
@@ -125,6 +156,7 @@ const AuthForm: React.FC = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               )}
 
@@ -134,12 +166,17 @@ const AuthForm: React.FC = () => {
                 color="primary"
                 fullWidth
                 sx={{ mt: 2 }}
+                disabled={loading}
               >
-                {authType === AuthType.Login
-                  ? "Login"
-                  : authType === AuthType.SignUp
-                  ? "Sign Up"
-                  : "Reset Password"}
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : authType === AuthType.Login ? (
+                  "Login"
+                ) : authType === AuthType.SignUp ? (
+                  "Sign Up"
+                ) : (
+                  "Reset Password"
+                )}
               </Button>
             </form>
 
@@ -151,6 +188,7 @@ const AuthForm: React.FC = () => {
                     component="button"
                     variant="body2"
                     onClick={() => setAuthType(AuthType.ForgotPassword)}
+                    disabled={loading}
                   >
                     Forgot Password?
                   </Link>
@@ -159,6 +197,7 @@ const AuthForm: React.FC = () => {
                     component="button"
                     variant="body2"
                     onClick={() => setAuthType(AuthType.SignUp)}
+                    disabled={loading}
                   >
                     Create an Account
                   </Link>
@@ -170,6 +209,7 @@ const AuthForm: React.FC = () => {
                   component="button"
                   variant="body2"
                   onClick={() => setAuthType(AuthType.Login)}
+                  disabled={loading}
                 >
                   Already have an account? Login
                 </Link>
@@ -180,6 +220,7 @@ const AuthForm: React.FC = () => {
                   component="button"
                   variant="body2"
                   onClick={() => setAuthType(AuthType.Login)}
+                  disabled={loading}
                 >
                   Back to Login
                 </Link>

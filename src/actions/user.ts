@@ -6,6 +6,6 @@
 
 // export const logout = createAction("logout");
 
-import { loginRequest, logout } from "../reducer/user";
+import { loginRequest, registerRequest, logout } from "../reducer/user";
 
-export { loginRequest, logout };
+export { loginRequest, registerRequest, logout };
