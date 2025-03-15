@@ -8,4 +8,5 @@ export enum Standard {
   ESRS = "ESRS",
   TCFD = "TCFD",
   SEC = "SEC",
+  IFRS = "IFRS",
 }

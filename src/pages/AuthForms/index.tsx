@@ -38,6 +38,10 @@ const AuthForm: React.FC = () => {
     loading,
   } = useSelector((state: RootState) => state.user);
 
+  // const whole = useSelector((state: RootState) => state.user);
+
+  // console.log("whole ----> ", whole);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 

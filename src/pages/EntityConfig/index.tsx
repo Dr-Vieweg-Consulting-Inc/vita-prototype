@@ -164,7 +164,7 @@ const EntityConfig: React.FC = () => {
 
   const handleAddEntity = () => {
     if (!newEntity.name || !newEntity.type || !newEntity.contact_email) return;
-    dispatch(addEntity({ id: entities.length + 1, ...newEntity }));
+    // dispatch(addEntity({ id: entities.length + 1, ...newEntity }));
     setNewEntity({
       name: "",
       type: "",

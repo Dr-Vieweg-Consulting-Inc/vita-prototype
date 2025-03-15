@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { UserState } from "../types";
+import { UserState, UserStatus } from "../types";
 import { LoginResponse } from "../types/api";
 
 const initialState: UserState = {
@@ -14,6 +14,26 @@ const initialState: UserState = {
   error: null,
   status: null,
 };
+
+// const initialState: UserState = {
+//   id: 97,
+//   firstName: "User97",
+//   lastName: "Last97",
+//   email: "user97@example.com",
+//   entities: [{
+//       id: 13,
+//       name: string;
+//       // industry: string;
+//       // country: string;
+//       roles: Role[];
+//   }
+//   ],
+//   isAuthenticated: true,
+//   token: "dummy",
+//   loading: false,
+//   error: null,
+//   status: UserStatus.Active,
+// };
 
 const userSlice = createSlice({
   name: "user",

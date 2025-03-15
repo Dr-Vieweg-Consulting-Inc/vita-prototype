@@ -10,8 +10,8 @@ import {
   Paper,
   Button,
   Box,
-  // Tabs,
-  // Tab,
+  Tabs,
+  Tab,
   TextField,
   IconButton,
   List,
@@ -32,8 +32,6 @@ import {
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Members } from "./Members";
-import { Overview } from "./Overview";
-import { Tabs } from "../../components";
 
 const dummyEntities = [
   { id: 1, name: "Company A" },
@@ -64,7 +62,7 @@ const dummyMembers = [
   { entityId: 2, id: 3, name: "Charlie Brown", role: "Data Entry" },
 ];
 
-const Dashboard: React.FC = () => {
+export function Overview() {
   const [selectedEntity, setSelectedEntity] = useState<number>(
     dummyEntities[0].id
   );
@@ -78,9 +76,9 @@ const Dashboard: React.FC = () => {
     setSelectedEntity(event.target.value as number);
   };
 
-  // const handleTabChange = (newIndex: number) => {
-  //   setTabIndex(newIndex);
-  // };
+  const handleTabChange = (event: React.SyntheticEvent, newIndex: number) => {
+    setTabIndex(newIndex);
+  };
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
@@ -110,56 +108,36 @@ const Dashboard: React.FC = () => {
   }));
 
   return (
-    <Container>
-      {/* Top Bar */}
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            ESG Reporting Accelerator
-          </Typography>
-          <Select
-            value={selectedEntity}
-            onChange={handleEntityChange}
-            sx={{ color: "white", backgroundColor: "#333" }}
-          >
-            {dummyEntities.map((entity) => (
-              <MenuItem key={entity.id} value={entity.id}>
-                {entity.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </Toolbar>
-      </AppBar>
-
-      {/* Tabs */}
-      {/* <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mt: 2 }}>
-        <Tab
-          label="Overview"
-          sx={{
-            "&.Mui-selected": { outline: "none" },
-            "&:focus": { outline: "none" },
-          }}
-        />
-        <Tab
-          label="Members"
-          sx={{
-            "&.Mui-selected": { outline: "none" },
-            "&:focus": { outline: "none" },
-          }}
-        />
-      </Tabs> */}
-
-      <Tabs
-        value={tabIndex}
-        onChange={(value) => setTabIndex(value)}
-        labels={["Overview", "Members"]}
-      />
-
-      {tabIndex === 0 && <Overview />}
-
-      {tabIndex === 1 && <Members />}
-    </Container>
+    <>
+      {/* Key Metrics */}
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12} md={4}>
+          <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="h6">Total Reports</Typography>
+            <Typography variant="h4">{entityReports.length}</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="h6">Pending Reviews</Typography>
+            <Typography variant="h4">
+              {
+                entityReports.filter(
+                  (report) => report.status === "Pending Review"
+                ).length
+              }
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+            <Typography variant="h6">Compliance %</Typography>
+            <Typography variant="h4">
+              {complianceStatus?.score || 0}%
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    </>
   );
-};
-
-export default Dashboard;
+}

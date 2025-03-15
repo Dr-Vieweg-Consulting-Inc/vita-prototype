@@ -1,3 +1,4 @@
+import { Role } from "./role";
 import { Entity, UserStatus } from "./state";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -49,4 +50,18 @@ export interface RegisterResponse extends APIResponse {
   token: string;
 
   status: UserStatus;
+}
+
+export interface RetrieveMembersRequest extends APIRequest {
+  entity: number;
+}
+
+export interface RetrieveMembersResponse extends APIResponse {
+  members: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    roles: Role[];
+  }[];
 }

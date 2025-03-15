@@ -113,10 +113,10 @@ import "./App.css";
 
 // export default App;
 
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Container, Button } from "@mui/material";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import store from "./reducer";
 import EntityConfig from "./pages/EntityConfig";
 import Procedures from "./pages/Procedures";
@@ -126,8 +126,18 @@ import ReportingEngine from "./pages/ReportingEngine";
 import Auditing from "./pages/Auditing";
 import Publication from "./pages/Publication";
 import AuthForms from "./pages/AuthForms";
+import Dashboard from "./pages/Dashboard";
+import { loginRequest } from "./actions";
+// import { Dashboard } from "@mui/icons-material";
+// import { Dashboard } from "@mui/icons-material";
 
 const App: React.FC = () => {
+  const dispath = useDispatch();
+
+  useEffect(() => {
+    dispath(loginRequest({ email: "user97@example.com", password: "hello" }));
+  }, [dispath]);
+
   return (
     // <Provider store={store}>
     <Router>
@@ -171,6 +181,7 @@ const App: React.FC = () => {
           <Route path="/reporting-engine" element={<ReportingEngine />} />
           <Route path="/auditing" element={<Auditing />} />
           <Route path="/publication" element={<Publication />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route
             path="/"
             element={
