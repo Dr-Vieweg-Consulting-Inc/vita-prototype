@@ -1,262 +1,242 @@
-// import React, { useState } from "react";
-// import {
-//   Container,
-//   Typography,
-//   TextField,
-//   Button,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   Paper,
-// } from "@mui/material";
-
-// interface Entity {
-//   id: number;
-//   name: string;
-//   type: string;
-//   industry: string;
-//   country: string;
-//   contact_email: string;
-// }
-
-// const EntityConfig: React.FC = () => {
-//   const [entities, setEntities] = useState<Entity[]>([]);
-//   const [newEntity, setNewEntity] = useState<Omit<Entity, "id">>({
-//     name: "",
-//     type: "",
-//     industry: "",
-//     country: "",
-//     contact_email: "",
-//   });
-
-//   const handleAddEntity = () => {
-//     if (!newEntity.name || !newEntity.type || !newEntity.contact_email) return;
-//     setEntities([...entities, { id: entities.length + 1, ...newEntity }]);
-//     setNewEntity({
-//       name: "",
-//       type: "",
-//       industry: "",
-//       country: "",
-//       contact_email: "",
-//     });
-//   };
-
-//   return (
-//     <Container>
-//       <Typography variant="h4" gutterBottom>
-//         Entity Configuration
-//       </Typography>
-//       <Typography variant="h6">Add New Entity</Typography>
-//       <TextField
-//         label="Name"
-//         fullWidth
-//         value={newEntity.name}
-//         onChange={(e) => setNewEntity({ ...newEntity, name: e.target.value })}
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Type"
-//         fullWidth
-//         value={newEntity.type}
-//         onChange={(e) => setNewEntity({ ...newEntity, type: e.target.value })}
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Industry"
-//         fullWidth
-//         value={newEntity.industry}
-//         onChange={(e) =>
-//           setNewEntity({ ...newEntity, industry: e.target.value })
-//         }
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Country"
-//         fullWidth
-//         value={newEntity.country}
-//         onChange={(e) =>
-//           setNewEntity({ ...newEntity, country: e.target.value })
-//         }
-//         margin="normal"
-//       />
-//       <TextField
-//         label="Contact Email"
-//         fullWidth
-//         value={newEntity.contact_email}
-//         onChange={(e) =>
-//           setNewEntity({ ...newEntity, contact_email: e.target.value })
-//         }
-//         margin="normal"
-//       />
-//       <Button
-//         variant="contained"
-//         color="primary"
-//         onClick={handleAddEntity}
-//         sx={{ mt: 2 }}
-//       >
-//         Add Entity
-//       </Button>
-
-//       <Typography variant="h6" sx={{ mt: 4 }}>
-//         Existing Entities
-//       </Typography>
-//       <TableContainer component={Paper}>
-//         <Table>
-//           <TableHead>
-//             <TableRow>
-//               <TableCell>Name</TableCell>
-//               <TableCell>Type</TableCell>
-//               <TableCell>Industry</TableCell>
-//               <TableCell>Country</TableCell>
-//               <TableCell>Contact Email</TableCell>
-//             </TableRow>
-//           </TableHead>
-//           <TableBody>
-//             {entities.map((entity) => (
-//               <TableRow key={entity.id}>
-//                 <TableCell>{entity.name}</TableCell>
-//                 <TableCell>{entity.type}</TableCell>
-//                 <TableCell>{entity.industry}</TableCell>
-//                 <TableCell>{entity.country}</TableCell>
-//                 <TableCell>{entity.contact_email}</TableCell>
-//               </TableRow>
-//             ))}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-//     </Container>
-//   );
-// };
-
-// export default EntityConfig;
-
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch, addEntity } from "../../reducer";
-// import { addEntity } from "../redux/actions";
+import React, { useState } from "react";
 import {
   Container,
-  Typography,
   TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  ListItemText,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Typography,
+  Grid,
   Paper,
+  List,
+  ListItem,
+  IconButton,
+  Modal,
+  Box,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+
+// Dummy Data
+const availableStandards = [
+  "ISSB",
+  "CSRD",
+  "CSDS",
+  "GRI",
+  "CDP",
+  "SBTi",
+  "ESRS",
+  "TCFD",
+  "SEC",
+];
+
+const dummyMembers = [
+  { id: 1, name: "Alice Smith", role: "Admin" },
+  { id: 2, name: "Bob Brown", role: "Reviewer" },
+  { id: 3, name: "Chris Lee", role: "Data Entry" },
+];
 
 const EntityConfig: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const entities = useSelector((state: RootState) => state.entities);
-  const [newEntity, setNewEntity] = React.useState({
+  const [entity, setEntity] = useState({
     name: "",
-    type: "",
     industry: "",
     country: "",
-    contact_email: "",
+    deploymentMode: "cloud",
+    esgStandards: [] as string[],
   });
 
-  const handleAddEntity = () => {
-    if (!newEntity.name || !newEntity.type || !newEntity.contact_email) return;
-    // dispatch(addEntity({ id: entities.length + 1, ...newEntity }));
-    setNewEntity({
-      name: "",
-      type: "",
-      industry: "",
-      country: "",
-      contact_email: "",
-    });
+  const [members, setMembers] = useState(dummyMembers);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+
+  // Handle Entity Input Change
+  const handleChange = (
+    e: React.ChangeEvent<{ value: unknown; name?: string }>
+  ) => {
+    setEntity({ ...entity, [e.target.name as string]: e.target.value });
+  };
+
+  // Handle ESG Standards Selection
+  const handleStandardChange = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setEntity({ ...entity, esgStandards: event.target.value as string[] });
+  };
+
+  // Invite Member
+  const handleInvite = () => {
+    if (inviteEmail) {
+      setMembers([
+        ...members,
+        { id: members.length + 1, name: inviteEmail, role: "Pending Invite" },
+      ]);
+      setInviteOpen(false);
+      setInviteEmail("");
+    }
   };
 
   return (
-    <Container>
+    <Container maxWidth="md">
       <Typography variant="h4" gutterBottom>
-        Client Configuration
+        Entity Configuration
       </Typography>
-      <Typography variant="h6">Add New Entity</Typography>
-      <TextField
-        label="Name"
-        fullWidth
-        value={newEntity.name}
-        onChange={(e) => setNewEntity({ ...newEntity, name: e.target.value })}
-        margin="normal"
-      />
-      <TextField
-        label="Type"
-        fullWidth
-        value={newEntity.type}
-        onChange={(e) => setNewEntity({ ...newEntity, type: e.target.value })}
-        margin="normal"
-      />
-      <TextField
-        label="Industry"
-        fullWidth
-        value={newEntity.industry}
-        onChange={(e) =>
-          setNewEntity({ ...newEntity, industry: e.target.value })
-        }
-        margin="normal"
-      />
-      <TextField
-        label="Country"
-        fullWidth
-        value={newEntity.country}
-        onChange={(e) =>
-          setNewEntity({ ...newEntity, country: e.target.value })
-        }
-        margin="normal"
-      />
-      <TextField
-        label="Contact Email"
-        fullWidth
-        value={newEntity.contact_email}
-        onChange={(e) =>
-          setNewEntity({ ...newEntity, contact_email: e.target.value })
-        }
-        margin="normal"
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleAddEntity}
-        sx={{ mt: 2 }}
-      >
-        Add Entity
-      </Button>
 
-      <Typography variant="h6" sx={{ mt: 4 }}>
-        Existing Entities
-      </Typography>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Industry</TableCell>
-              <TableCell>Country</TableCell>
-              <TableCell>Contact Email</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {entities.map((entity) => (
-              <TableRow key={entity.id}>
-                <TableCell>{entity.name}</TableCell>
-                <TableCell>{entity.type}</TableCell>
-                <TableCell>{entity.industry}</TableCell>
-                <TableCell>{entity.country}</TableCell>
-                <TableCell>{entity.contact_email}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Grid container spacing={3}>
+        {/* Entity Details */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3 }}>
+            <Typography variant="h6">General Information</Typography>
+            <TextField
+              label="Entity Name"
+              fullWidth
+              name="name"
+              value={entity.name}
+              onChange={handleChange}
+              margin="normal"
+            />
+            <TextField
+              label="Industry"
+              fullWidth
+              name="industry"
+              value={entity.industry}
+              onChange={handleChange}
+              margin="normal"
+            />
+            <TextField
+              label="Country"
+              fullWidth
+              name="country"
+              value={entity.country}
+              onChange={handleChange}
+              margin="normal"
+            />
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel
+                id="deployment-mode-label"
+                // shrink={Boolean(entity.deploymentMode)}
+              >
+                Deployment Mode
+              </InputLabel>
+              <Select
+                labelId="deployment-mode-label"
+                id="deployment-mode"
+                name="deploymentMode"
+                value={entity.deploymentMode}
+                onChange={handleChange}
+                displayEmpty
+              >
+                <MenuItem value="" disabled>
+                  Select Deployment Mode
+                </MenuItem>
+                <MenuItem value="cloud">Cloud</MenuItem>
+                <MenuItem value="on-premise">On-Premise</MenuItem>
+                <MenuItem value="hybrid">Hybrid</MenuItem>
+              </Select>
+            </FormControl>
+          </Paper>
+        </Grid>
+
+        {/* ESG Standards */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3 }}>
+            <Typography variant="h6">Select ESG Standards</Typography>
+            <FormControl fullWidth margin="normal">
+              <Select
+                multiple
+                value={entity.esgStandards}
+                onChange={handleStandardChange}
+                renderValue={(selected) => (selected as string[]).join(", ")}
+              >
+                {availableStandards.map((standard) => (
+                  <MenuItem key={standard} value={standard}>
+                    <Checkbox
+                      checked={entity.esgStandards.includes(standard)}
+                    />
+                    <ListItemText primary={standard} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Paper>
+        </Grid>
+
+        {/* Members Management */}
+        <Grid item xs={12}>
+          <Paper sx={{ padding: 3 }}>
+            <Typography variant="h6">Members</Typography>
+            <List>
+              {members.map((member) => (
+                <ListItem
+                  key={member.id}
+                  secondaryAction={
+                    <IconButton>
+                      <MoreVertIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={member.name} secondary={member.role} />
+                </ListItem>
+              ))}
+            </List>
+
+            <Button
+              startIcon={<PersonAddIcon />}
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => setInviteOpen(true)}
+            >
+              Invite Member
+            </Button>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Save & Cancel Buttons */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+        <Button variant="outlined" sx={{ mr: 2 }}>
+          Cancel
+        </Button>
+        <Button variant="contained" color="primary">
+          Save Changes
+        </Button>
+      </Box>
+
+      {/* Invite Member Modal */}
+      <Modal open={inviteOpen} onClose={() => setInviteOpen(false)}>
+        <Box
+          sx={{
+            width: 400,
+            padding: 3,
+            margin: "auto",
+            mt: 10,
+            bgcolor: "white",
+            boxShadow: 24,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6">Invite Member</Typography>
+          <TextField
+            label="Email Address"
+            fullWidth
+            margin="normal"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+          />
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+            <Button onClick={() => setInviteOpen(false)} sx={{ mr: 2 }}>
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={handleInvite}>
+              Send Invite
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Container>
   );
 };
