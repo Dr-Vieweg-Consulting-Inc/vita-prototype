@@ -141,7 +141,7 @@ const App: React.FC = () => {
   return (
     // <Provider store={store}>
     <Router>
-      <AppBar position="static" color="primary">
+      <AppBar position="static" color="primary" sx={{ width: "100vw" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             ESG Reporting Accelerator
