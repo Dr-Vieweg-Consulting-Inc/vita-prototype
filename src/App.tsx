@@ -115,7 +115,14 @@ import "./App.css";
 
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Container, Button } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Button,
+  Box,
+} from "@mui/material";
 import { Provider, useDispatch } from "react-redux";
 // import store from "./reducer";
 import EntityConfig from "./pages/EntityConfig";
@@ -142,31 +149,54 @@ const App: React.FC = () => {
     // <Provider store={store}>
     <Router>
       <AppBar position="static" color="primary" sx={{ width: "100vw" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          {/* <Typography variant="h6" sx={{ flexGrow: 1 }}>
             ESG Reporting Accelerator
-          </Typography>
-          <Button color="inherit" component={Link} to="/entity-config">
-            Entity Config
-          </Button>
-          <Button color="inherit" component={Link} to="/procedures">
-            Procedures
-          </Button>
-          <Button color="inherit" component={Link} to="/data-aggregation">
-            Data Aggregation
-          </Button>
-          <Button color="inherit" component={Link} to="/data-consolidation">
-            Data Consolidation
-          </Button>
-          <Button color="inherit" component={Link} to="/reporting-engine">
-            Reporting
-          </Button>
-          <Button color="inherit" component={Link} to="/auditing">
-            Auditing
-          </Button>
-          <Button color="inherit" component={Link} to="/publication">
-            Publication
-          </Button>
+          </Typography> */}
+          {/* <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <img
+              src="logos/full.png"
+              alt="ESG Logo"
+              style={{ height: "40px", marginRight: "16px" }} // Adjust height/margin as needed
+            />
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              ESG Reporting Accelerator
+            </Typography>
+          </Box> */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <img
+              src="logos/full.png"
+              alt="ESG Logo"
+              style={{ height: "40px" }}
+            />
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              ESG Reporting Accelerator
+            </Typography>
+          </Box>
+
+          <Box>
+            <Button color="inherit" component={Link} to="/entity-config">
+              Entity Config
+            </Button>
+            <Button color="inherit" component={Link} to="/procedures">
+              Procedures
+            </Button>
+            <Button color="inherit" component={Link} to="/data-aggregation">
+              Data Aggregation
+            </Button>
+            <Button color="inherit" component={Link} to="/data-consolidation">
+              Data Consolidation
+            </Button>
+            <Button color="inherit" component={Link} to="/reporting-engine">
+              Reporting
+            </Button>
+            <Button color="inherit" component={Link} to="/auditing">
+              Auditing
+            </Button>
+            <Button color="inherit" component={Link} to="/publication">
+              Publication
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
       <Container sx={{ width: "100%" }}>
