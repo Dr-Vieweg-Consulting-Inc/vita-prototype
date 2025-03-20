@@ -117,7 +117,7 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Container, Button } from "@mui/material";
 import { Provider, useDispatch } from "react-redux";
-import store from "./reducer";
+// import store from "./reducer";
 import EntityConfig from "./pages/EntityConfig";
 import Procedures from "./pages/Procedures";
 import DataAggregation from "./pages/DataAggregation";
@@ -141,10 +141,7 @@ const App: React.FC = () => {
   return (
     // <Provider store={store}>
     <Router>
-      <AppBar
-        position="static"
-        sx={{ width: "100vw", backgroundColor: "#1976d2" }}
-      >
+      <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             ESG Reporting Accelerator
