@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   TextField,
@@ -78,6 +78,10 @@ const EntityConfig: React.FC = () => {
       setInviteEmail("");
     }
   };
+
+  useEffect(() => {
+    console.log("implementing....");
+  }, []);
 
   return (
     <Container maxWidth="md">

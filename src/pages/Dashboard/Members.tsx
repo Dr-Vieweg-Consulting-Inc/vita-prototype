@@ -31,7 +31,7 @@ import {
 } from "recharts";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { retrieveMembers } from "../../api/member";
+import { retrieveMembers } from "../../api";
 import { RetrieveMembersResponse, RootState } from "../../types";
 import { useSelector } from "react-redux";
 

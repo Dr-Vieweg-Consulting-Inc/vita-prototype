@@ -65,3 +65,22 @@ export interface RetrieveMembersResponse extends APIResponse {
     roles: Role[];
   }[];
 }
+
+// export interface RetrieveEntityDetailsRequest extends APIRequest {
+//   entity: number;
+// }
+
+export interface RetrieveEntityDetailsResponse extends APIResponse {
+  name: string;
+  industry: string;
+  country: string;
+  deploymentMode: string;
+  standards: { id: number; name: string }[];
+  members: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    roles: Role[];
+  }[];
+}
