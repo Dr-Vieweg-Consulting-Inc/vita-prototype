@@ -123,7 +123,7 @@ import {
   Button,
   Box,
 } from "@mui/material";
-import { Provider, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import store from "./reducer";
 import EntityConfig from "./pages/EntityConfig";
 import Procedures from "./pages/Procedures";
@@ -135,6 +135,8 @@ import Publication from "./pages/Publication";
 import AuthForms from "./pages/AuthForms";
 import Dashboard from "./pages/Dashboard";
 import { loginRequest } from "./actions";
+import { RootState } from "./types";
+import MaterialityAnalysis from "./pages/MaterialityAnalysis";
 // import { Dashboard } from "@mui/icons-material";
 // import { Dashboard } from "@mui/icons-material";
 
@@ -144,6 +146,10 @@ const App: React.FC = () => {
   useEffect(() => {
     dispath(loginRequest({ email: "user97@example.com", password: "hello" }));
   }, [dispath]);
+
+  // TODO: This is temporary check. Implement protected routes later
+  const useStatus = useSelector((state: RootState) => state.user.status);
+  if (!useStatus) return null;
 
   return (
     // <Provider store={store}>
@@ -209,6 +215,10 @@ const App: React.FC = () => {
           <Route path="/auditing" element={<Auditing />} />
           <Route path="/publication" element={<Publication />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/materiality-analysis"
+            element={<MaterialityAnalysis />}
+          />
           <Route
             path="/"
             element={

@@ -20,6 +20,9 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { retrieveEntityDetails } from "../../api";
+import { RootState } from "../../types";
+import { useSelector } from "react-redux";
 
 // Dummy Data
 const availableStandards = [
@@ -79,9 +82,14 @@ const EntityConfig: React.FC = () => {
     }
   };
 
+  const entityId = useSelector((state: RootState) => state.user.entities[0].id);
+
   useEffect(() => {
-    console.log("implementing....");
-  }, []);
+    retrieveEntityDetails(entityId).then((data) => {
+      // TODO: Connect retrieved data to front end
+      console.log("show the results: ", data);
+    });
+  }, [entityId]);
 
   return (
     <Container maxWidth="md">
