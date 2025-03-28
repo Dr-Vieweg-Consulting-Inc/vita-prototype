@@ -12,6 +12,7 @@ import {
   TableRow,
   Paper,
   TextField,
+  Grid,
 } from "@mui/material";
 import {
   ScatterChart,
@@ -36,8 +37,20 @@ interface MaterialityRow {
   "Stakeholder Importance": number;
 }
 
+const initialData: MaterialityRow[] = [
+  {
+    ESRS: "E1",
+    Topic: "Climate Change",
+    Subtopic: "Adaptation",
+    "Sub-subtopic": "Infrastructure resilience",
+    "Impact Score": 8.5,
+    "Financial Risk": 7.2,
+    "Stakeholder Importance": 9.0,
+  },
+];
+
 export const MaterialityUploader = () => {
-  const [rows, setRows] = useState<MaterialityRow[]>([]);
+  const [rows, setRows] = useState<MaterialityRow[]>(initialData);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -164,7 +177,43 @@ export const MaterialityUploader = () => {
                   range={[100, 500]}
                   name="Impact Score"
                 />
-                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                {/* <Tooltip
+                  cursor={{ strokeDasharray: "3 3" }}
+                  formatter={(value: any, name: string, props: any) => [
+                    `${value}`,
+                    name,
+                  ]}
+                  labelFormatter={(label: any, payload: any[]) => {
+                    const topic = payload[0]?.payload?.Topic;
+                    return `Topic: ${topic}`;
+                  }}
+                /> */}
+
+                <Tooltip
+                  cursor={{ strokeDasharray: "3 3" }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const d = payload[0].payload;
+                      return (
+                        <Paper sx={{ p: 1 }}>
+                          <Typography variant="subtitle2">
+                            <strong>{d["Topic"]}</strong>
+                          </Typography>
+                          <div>Subtopic: {d["Subtopic"]}</div>
+                          <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
+                          <div>Impact Score: {d["Impact Score"]}</div>
+                          <div>Financial Risk: {d["Financial Risk"]}</div>
+                          <div>
+                            Stakeholder Importance:{" "}
+                            {d["Stakeholder Importance"]}
+                          </div>
+                        </Paper>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+
                 <Scatter name="Topics" data={rows} fill="#1976d2" />
               </ScatterChart>
             </ResponsiveContainer>
