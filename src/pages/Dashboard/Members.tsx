@@ -82,10 +82,7 @@ export function Members() {
   //     setTabIndex(newIndex);
   //   };
 
-  const entityId = useSelector((state: RootState) => {
-    console.log("bbbL: ", state.user);
-    return state.user.entities[0].id;
-  });
+  const entityId = useSelector((state: RootState) => state.user.entities[0].id);
 
   //   console.log("show logged: ", abc);
 
