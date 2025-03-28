@@ -28,6 +28,12 @@ import {
   ZAxis,
 } from "recharts";
 
+// export * from "./Uploader";
+
+import { MaterialityUploader } from "./Uploader";
+
+export { MaterialityUploader };
+
 const initialData = [
   {
     id: 1,

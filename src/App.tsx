@@ -22,7 +22,9 @@ import Auditing from "./pages/Auditing";
 import Publication from "./pages/Publication";
 import AuthForms from "./pages/AuthForms";
 import Dashboard from "./pages/Dashboard";
-import MaterialityAnalysis from "./pages/MaterialityAnalysis";
+import MaterialityAnalysis, {
+  MaterialityUploader,
+} from "./pages/MaterialityAnalysis";
 import { loginRequest } from "./actions";
 import { RootState } from "./types";
 import { Navbar } from "./components";
@@ -133,6 +135,12 @@ const App: React.FC = () => {
             path="/materiality-analysis"
             element={<MaterialityAnalysis />}
           />
+
+          <Route
+            path="/materiality-analysis-uploader"
+            element={<MaterialityUploader />}
+          />
+
           <Route
             path="/"
             element={
