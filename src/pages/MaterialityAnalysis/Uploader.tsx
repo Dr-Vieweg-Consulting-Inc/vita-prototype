@@ -385,6 +385,7 @@ export const flattenMateriality = (
 // import { flattenMateriality } from "./utils/flattenMateriality";
 
 export const MaterialityUploader: React.FC = () => {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [form, setForm] = useState<any | null>(null);
 
@@ -417,13 +418,30 @@ export const MaterialityUploader: React.FC = () => {
     setData((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const groupedData: Record<string, Record<string, any[]>> = {};
+  data.forEach((row) => {
+    const main = row["Main topic"] || "Uncategorized";
+    const sub = row["Subtopic"] || "General";
+    if (!groupedData[main]) groupedData[main] = {};
+    if (!groupedData[main][sub]) groupedData[main][sub] = [];
+    groupedData[main][sub].push(row);
+  });
+
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         ESG Materiality Upload + Editor
       </Typography>
 
-      <input type="file" onChange={handleFileUpload} accept=".xlsx,.xls" />
+      <Button variant="contained" component="label" sx={{ my: 2 }}>
+        Upload Excel File
+        <input
+          type="file"
+          hidden
+          onChange={handleFileUpload}
+          accept=".xlsx,.xls"
+        />
+      </Button>
 
       {form && (
         <Paper sx={{ p: 2, my: 2 }}>
@@ -490,8 +508,46 @@ export const MaterialityUploader: React.FC = () => {
                   range={[60, 200]}
                   name="Impact Score"
                 />
-                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-                <Scatter name="Topics" data={data} fill="#1976d2" />
+                <Tooltip
+                  cursor={{ strokeDasharray: "3 3" }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const d = payload[0].payload;
+                      return (
+                        <Paper sx={{ p: 1 }}>
+                          <Typography variant="subtitle2">
+                            <strong>{d["Main topic"]}</strong>
+                          </Typography>
+                          {d["Subtopic"] && (
+                            <div>Subtopic: {d["Subtopic"]}</div>
+                          )}
+                          <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
+                          <div>Impact Score: {d["Impact Score"]}</div>
+                          <div>Financial Risk: {d["Financial Risk"]}</div>
+                          <div>
+                            Stakeholder Importance:{" "}
+                            {d["Stakeholder Importance"]}
+                          </div>
+                        </Paper>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                {["E", "S", "G"].map((prefix, idx) => (
+                  <Scatter
+                    key={prefix}
+                    name={`Category ${prefix}`}
+                    data={data.filter(
+                      (d) =>
+                        d.ESRS?.startsWith(prefix) &&
+                        d["Impact Score"] != null &&
+                        d["Financial Risk"] != null &&
+                        d["Stakeholder Importance"] != null
+                    )}
+                    fill={["#1976d2", "#d32f2f", "#388e3c"][idx]}
+                  />
+                ))}
               </ScatterChart>
             </ResponsiveContainer>
           </Paper>
@@ -500,7 +556,7 @@ export const MaterialityUploader: React.FC = () => {
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Topic Details
+              Topic Details (Grouped)
             </Typography>
             <TableContainer>
               <Table size="small">
@@ -517,24 +573,99 @@ export const MaterialityUploader: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {data.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{row["ESRS"]}</TableCell>
-                      <TableCell>{row["Main topic"]}</TableCell>
-                      <TableCell>{row["Subtopic"]}</TableCell>
-                      <TableCell>{row["Sub-subtopic"]}</TableCell>
-                      <TableCell>{row["Impact Score"]}</TableCell>
-                      <TableCell>{row["Financial Risk"]}</TableCell>
-                      <TableCell>{row["Stakeholder Importance"]}</TableCell>
-                      <TableCell align="right">
-                        <IconButton onClick={() => handleEdit(row)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton onClick={() => handleDelete(row.id)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
+                  {Object.entries(groupedData).map(([main, subtopics]) => (
+                    <React.Fragment key={main}>
+                      <TableRow>
+                        <TableCell
+                          colSpan={8}
+                          sx={{
+                            backgroundColor: "#f0f0f0",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {main}
+                        </TableCell>
+                      </TableRow>
+                      {Object.entries(subtopics).map(([sub, rows]) => (
+                        <React.Fragment key={sub}>
+                          <TableRow>
+                            <TableCell
+                              colSpan={8}
+                              sx={{ backgroundColor: "#fafafa", pl: 4 }}
+                            >
+                              {sub}
+                            </TableCell>
+                          </TableRow>
+                          {rows.map((row) => (
+                            <React.Fragment key={row.id}>
+                              <TableRow>
+                                <TableCell>{row["ESRS"]}</TableCell>
+                                <TableCell>{row["Main topic"]}</TableCell>
+                                <TableCell>{row["Subtopic"]}</TableCell>
+                                <TableCell>{row["Sub-subtopic"]}</TableCell>
+                                <TableCell>{row["Impact Score"]}</TableCell>
+                                <TableCell>{row["Financial Risk"]}</TableCell>
+                                <TableCell>
+                                  {row["Stakeholder Importance"]}
+                                </TableCell>
+                                <TableCell align="right">
+                                  <IconButton onClick={() => handleEdit(row)}>
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    onClick={() => handleDelete(row.id)}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    onClick={() =>
+                                      setExpandedId(
+                                        expandedId === row.id ? null : row.id
+                                      )
+                                    }
+                                  >
+                                    {expandedId === row.id ? "▲" : "▼"}
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                              {expandedId === row.id && (
+                                <TableRow>
+                                  <TableCell colSpan={8}>
+                                    <Box
+                                      sx={{
+                                        fontSize: 13,
+                                        color: "text.secondary",
+                                      }}
+                                    >
+                                      {Object.entries(row).map(([key, val]) => {
+                                        if (
+                                          [
+                                            "id",
+                                            "ESRS",
+                                            "Main topic",
+                                            "Subtopic",
+                                            "Sub-subtopic",
+                                            "Impact Score",
+                                            "Financial Risk",
+                                            "Stakeholder Importance",
+                                          ].includes(key)
+                                        )
+                                          return null;
+                                        return (
+                                          <div key={key}>
+                                            <strong>{key}</strong>: {val ?? "-"}
+                                          </div>
+                                        );
+                                      })}
+                                    </Box>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </React.Fragment>
                   ))}
                 </TableBody>
               </Table>
