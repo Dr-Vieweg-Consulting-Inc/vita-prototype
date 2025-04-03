@@ -1,3 +1,4 @@
+// src/components/MaterialityUploader.tsx
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import {
@@ -12,8 +13,12 @@ import {
   TableRow,
   Paper,
   TextField,
+  TableContainer,
   Grid,
+  IconButton,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   ScatterChart,
   Scatter,
@@ -27,42 +32,130 @@ import {
 } from "recharts";
 
 interface MaterialityRow {
-  [key: string]: string | number;
-  ESRS: string;
-  Topic: string;
-  Subtopic: string;
-  "Sub-subtopic": string;
-  "Impact Score": number;
-  "Financial Risk": number;
-  "Stakeholder Importance": number;
+  [key: string]: string | number | undefined;
+  ESRS?: string;
+  "Main topic"?: string;
+  Subtopic?: string;
+  "Sub-subtopic"?: string;
+  "Impact Score"?: number;
+  "Financial Risk"?: number;
+  "Stakeholder Importance"?: number;
+  [key: `Custom-${string}`]: any; // For additional custom columns
 }
 
-const initialData: MaterialityRow[] = [
-  {
-    ESRS: "E1",
-    Topic: "Climate Change",
-    Subtopic: "Adaptation",
-    "Sub-subtopic": "Infrastructure resilience",
-    "Impact Score": 8.5,
-    "Financial Risk": 7.2,
-    "Stakeholder Importance": 9.0,
-  },
-];
+// import * as XLSX from "xlsx";
 
-export const MaterialityUploader = () => {
-  const [rows, setRows] = useState<MaterialityRow[]>(initialData);
+// Parses the uploaded Excel file into nested structure
+// import * as XLSX from "xlsx";
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+// import * as XLSX from "xlsx";
+
+// Parses the Excel into a full nested JS object, including all keys and nulls
+export const parseMaterialityExcel = async (file: File) => {
+  return new Promise<Record<string, any>>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const binaryStr = e.target?.result;
+        const workbook = XLSX.read(binaryStr, { type: "binary" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const allRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Use row 1 (index 1) for actual column headers
+        const headers: string[] = allRows[1].map((h: any) =>
+          h !== undefined && h !== null ? String(h).trim() : ""
+        );
+
+        const contentRows = allRows.slice(2); // Data starts at row index 2
+
+        // Column index helpers
+        const getIndex = (label: string) =>
+          headers.findIndex((h) => h === label);
+        const idxMain = getIndex("Main topic");
+        const idxSub = getIndex("Subtopic");
+        const idxSubsub = getIndex("Sub-subtopic");
+
+        const nested: Record<string, any> = {};
+
+        for (const row of contentRows) {
+          const main = String(row[idxMain] || "").trim();
+          const sub = String(row[idxSub] || "")
+            .replace(/\n/g, " ")
+            .trim();
+          const subsub = String(row[idxSubsub] || "")
+            .replace(/\n/g, " ")
+            .trim();
+
+          if (!main || !sub) continue;
+
+          const entry: Record<string, any> = {};
+          headers.forEach((key, i) => {
+            const rawVal = row[i];
+            entry[key] =
+              rawVal === undefined || rawVal === null || rawVal === ""
+                ? null
+                : rawVal;
+          });
+
+          if (!nested[main]) nested[main] = {};
+          if (!nested[main][sub]) nested[main][sub] = {};
+
+          const subsubKey =
+            subsub && subsub.toLowerCase() !== "nan" ? subsub : "__self__";
+          nested[main][sub][subsubKey] = entry;
+        }
+
+        resolve(nested);
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    reader.onerror = reject;
+    reader.readAsBinaryString(file);
+  });
+};
+
+export const MaterialityUploader2 = () => {
+  const [rows, setRows] = useState<MaterialityRow[]>([]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    try {
+      const parsed = await parseMaterialityExcel(file);
+      console.log("Parsed ESG Data:", parsed);
+      // setNestedData(parsed); // set your state or pass it to a component
+    } catch (err) {
+      console.error("Failed to parse Excel:", err);
+    }
+
+    return;
 
     const reader = new FileReader();
     reader.onload = (evt) => {
       const data = evt.target?.result;
       const workbook = XLSX.read(data, { type: "binary" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json<MaterialityRow>(sheet);
-      setRows(json);
+      const json = XLSX.utils.sheet_to_json<any>(sheet, {
+        defval: "",
+      });
+
+      console.log("show json ----> ", json);
+
+      let abc: any = {};
+
+      for (let i = 2; i < json.length; i++) {
+        const row = json[i];
+
+        // console.log("pray: ", row.__EMPTY);
+
+        abc;
+      }
+
+      // setRows(json);
     };
     reader.readAsBinaryString(file);
   };
@@ -76,7 +169,8 @@ export const MaterialityUploader = () => {
     updated[index][field] =
       field.includes("Score") ||
       field.includes("Risk") ||
-      field.includes("Importance")
+      field.includes("Importance") ||
+      field === "Total Score Inside-Out"
         ? parseFloat(value as string)
         : value;
     setRows(updated);
@@ -90,11 +184,12 @@ export const MaterialityUploader = () => {
   };
 
   return (
-    <Container>
+    <Container maxWidth="xl">
       <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant="h4">
+        <Typography variant="h4" gutterBottom>
           Materiality Analysis Upload & Visualization
         </Typography>
+
         <Button variant="contained" component="label" sx={{ mt: 2 }}>
           Upload Excel File
           <input
@@ -104,18 +199,28 @@ export const MaterialityUploader = () => {
             accept=".xlsx,.xls"
           />
         </Button>
+
         {rows.length > 0 && (
           <>
             <Button variant="outlined" onClick={handleDownload} sx={{ ml: 2 }}>
               Download Updated Excel
             </Button>
 
-            <Paper sx={{ mt: 4, maxHeight: 400, overflow: "auto" }}>
-              <Table size="small">
+            <Paper
+              sx={{
+                mt: 4,
+                maxHeight: 500,
+                overflow: "auto",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
                     {Object.keys(rows[0]).map((key) => (
-                      <TableCell key={key}>{key}</TableCell>
+                      <TableCell key={key} sx={{ minWidth: 150 }}>
+                        {key}
+                      </TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
@@ -143,6 +248,7 @@ export const MaterialityUploader = () => {
             <Typography variant="h6" sx={{ mt: 4 }}>
               Materiality Matrix (Financial Risk vs Stakeholder Importance)
             </Typography>
+
             <ResponsiveContainer width="100%" height={400}>
               <ScatterChart>
                 <CartesianGrid />
@@ -177,18 +283,6 @@ export const MaterialityUploader = () => {
                   range={[100, 500]}
                   name="Impact Score"
                 />
-                {/* <Tooltip
-                  cursor={{ strokeDasharray: "3 3" }}
-                  formatter={(value: any, name: string, props: any) => [
-                    `${value}`,
-                    name,
-                  ]}
-                  labelFormatter={(label: any, payload: any[]) => {
-                    const topic = payload[0]?.payload?.Topic;
-                    return `Topic: ${topic}`;
-                  }}
-                /> */}
-
                 <Tooltip
                   cursor={{ strokeDasharray: "3 3" }}
                   content={({ active, payload }) => {
@@ -197,7 +291,7 @@ export const MaterialityUploader = () => {
                       return (
                         <Paper sx={{ p: 1 }}>
                           <Typography variant="subtitle2">
-                            <strong>{d["Topic"]}</strong>
+                            <strong>{d["Main topic"]}</strong>
                           </Typography>
                           <div>Subtopic: {d["Subtopic"]}</div>
                           <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
@@ -213,7 +307,6 @@ export const MaterialityUploader = () => {
                     return null;
                   }}
                 />
-
                 <Scatter name="Topics" data={rows} fill="#1976d2" />
               </ScatterChart>
             </ResponsiveContainer>
@@ -224,4 +317,231 @@ export const MaterialityUploader = () => {
   );
 };
 
-// export default MaterialityUpload;
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+interface MaterialityRow {
+  [key: string]: string | number | null;
+  ESRS?: string;
+  "Main topic"?: string;
+  Subtopic?: string;
+  "Sub-subtopic"?: string;
+}
+
+// Converts nested data to flat array of rows
+export const flattenMateriality = (
+  data: Record<string, any>
+): MaterialityRow[] => {
+  const result: MaterialityRow[] = [];
+
+  for (const mainTopic in data) {
+    const subtopics = data[mainTopic];
+    for (const subtopic in subtopics) {
+      const subsubtopics = subtopics[subtopic];
+      for (const subsub in subsubtopics) {
+        const entry = subsubtopics[subsub];
+        result.push({
+          "Main topic": mainTopic,
+          Subtopic: subtopic,
+          "Sub-subtopic": subsub === "__self__" ? null : subsub,
+          ...entry,
+        });
+      }
+    }
+  }
+
+  return result;
+};
+
+// import React, { useState } from "react";
+// import {
+//   Container,
+//   Typography,
+//   Paper,
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableContainer,
+//   TableHead,
+//   TableRow,
+//   TextField,
+//   Button,
+//   Box,
+//   IconButton,
+//   Grid,
+// } from "@mui/material";
+// import DeleteIcon from "@mui/icons-material/Delete";
+// import EditIcon from "@mui/icons-material/Edit";
+// import {
+//   ResponsiveContainer,
+//   ScatterChart,
+//   Scatter,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   ZAxis,
+// } from "recharts";
+// import { parseMaterialityExcel } from "./utils/parseMaterialityExcel"; // You should have this function ready
+// import { flattenMateriality } from "./utils/flattenMateriality";
+
+export const MaterialityUploader: React.FC = () => {
+  const [data, setData] = useState<any[]>([]);
+  const [form, setForm] = useState<any | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const parsed = await parseMaterialityExcel(file);
+    const flat = flattenMateriality(parsed);
+    setData(flat.map((d, i) => ({ id: i + 1, ...d })));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    if (form.id !== undefined && form.id !== null) {
+      setData((prev) =>
+        prev.map((item) => (item.id === form.id ? { ...item, ...form } : item))
+      );
+    }
+    setForm(null);
+  };
+
+  const handleEdit = (item: any) => {
+    setForm({ ...item });
+  };
+
+  const handleDelete = (id: number) => {
+    setData((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  return (
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        ESG Materiality Upload + Editor
+      </Typography>
+
+      <input type="file" onChange={handleFileUpload} accept=".xlsx,.xls" />
+
+      {form && (
+        <Paper sx={{ p: 2, my: 2 }}>
+          <Typography variant="h6" gutterBottom>
+            {form.id !== null ? "Edit ESG Topic" : "Add ESG Topic"}
+          </Typography>
+          <Box component="form" noValidate autoComplete="off">
+            {Object.keys(form).map((key) =>
+              key !== "id" ? (
+                <TextField
+                  key={key}
+                  name={key}
+                  label={key}
+                  fullWidth
+                  margin="normal"
+                  value={form[key] ?? ""}
+                  onChange={handleChange}
+                />
+              ) : null
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleSubmit}
+            >
+              Update
+            </Button>
+          </Box>
+        </Paper>
+      )}
+
+      <Grid container spacing={4} direction="column">
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Materiality Matrix
+            </Typography>
+            <ResponsiveContainer width="100%" height={400}>
+              <ScatterChart>
+                <CartesianGrid />
+                <XAxis
+                  type="number"
+                  dataKey="Financial Risk"
+                  name="Financial Risk"
+                  label={{
+                    value: "Financial Risk",
+                    position: "insideBottom",
+                    offset: -5,
+                  }}
+                />
+                <YAxis
+                  type="number"
+                  dataKey="Stakeholder Importance"
+                  name="Stakeholder Importance"
+                  label={{
+                    value: "Stakeholder Importance",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <ZAxis
+                  dataKey="Impact Score"
+                  range={[60, 200]}
+                  name="Impact Score"
+                />
+                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
+                <Scatter name="Topics" data={data} fill="#1976d2" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Topic Details
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>ESRS</TableCell>
+                    <TableCell>Main topic</TableCell>
+                    <TableCell>Subtopic</TableCell>
+                    <TableCell>Sub-subtopic</TableCell>
+                    <TableCell>Impact Score</TableCell>
+                    <TableCell>Financial Risk</TableCell>
+                    <TableCell>Stakeholder Importance</TableCell>
+                    <TableCell align="right">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>{row["ESRS"]}</TableCell>
+                      <TableCell>{row["Main topic"]}</TableCell>
+                      <TableCell>{row["Subtopic"]}</TableCell>
+                      <TableCell>{row["Sub-subtopic"]}</TableCell>
+                      <TableCell>{row["Impact Score"]}</TableCell>
+                      <TableCell>{row["Financial Risk"]}</TableCell>
+                      <TableCell>{row["Stakeholder Importance"]}</TableCell>
+                      <TableCell align="right">
+                        <IconButton onClick={() => handleEdit(row)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(row.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
+  );
+};
