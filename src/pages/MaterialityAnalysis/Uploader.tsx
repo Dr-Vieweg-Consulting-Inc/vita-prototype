@@ -16,6 +16,7 @@ import {
   TableContainer,
   Grid,
   IconButton,
+  Stack,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -388,6 +389,7 @@ export const MaterialityUploader: React.FC = () => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [form, setForm] = useState<any | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -433,15 +435,42 @@ export const MaterialityUploader: React.FC = () => {
         ESG Materiality Upload + Editor
       </Typography>
 
-      <Button variant="contained" component="label" sx={{ my: 2 }}>
-        Upload Excel File
-        <input
-          type="file"
-          hidden
-          onChange={handleFileUpload}
-          accept=".xlsx,.xls"
-        />
-      </Button>
+      <Stack direction="row" spacing={2} sx={{ my: 2 }}>
+        <Button variant="contained" component="label">
+          Upload Excel File
+          <input
+            type="file"
+            hidden
+            onChange={handleFileUpload}
+            accept=".xlsx,.xls"
+          />
+        </Button>
+        <TextField
+          select
+          label="Filter ESG Category"
+          value={filterCategory ?? ""}
+          onChange={(e) => setFilterCategory(e.target.value || null)}
+          SelectProps={{ native: true }}
+          sx={{ width: 200 }}
+        >
+          <option value="">All</option>
+          <option value="E">Environment (E)</option>
+          <option value="S">Social (S)</option>
+          <option value="G">Governance (G)</option>
+        </TextField>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            const exportData = data.map(({ id, ...rest }) => rest);
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Materiality");
+            XLSX.writeFile(workbook, "materiality_updated.xlsx");
+          }}
+        >
+          Download Excel
+        </Button>
+      </Stack>
 
       {form && (
         <Paper sx={{ p: 2, my: 2 }}>
@@ -476,80 +505,86 @@ export const MaterialityUploader: React.FC = () => {
 
       <Grid container spacing={4} direction="column">
         <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 2, overflowX: "auto" }}>
             <Typography variant="h6" gutterBottom>
               Materiality Matrix
             </Typography>
-            <ResponsiveContainer width="100%" height={400}>
-              <ScatterChart>
-                <CartesianGrid />
-                <XAxis
-                  type="number"
-                  dataKey="Financial Risk"
-                  name="Financial Risk"
-                  label={{
-                    value: "Financial Risk",
-                    position: "insideBottom",
-                    offset: -5,
-                  }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="Stakeholder Importance"
-                  name="Stakeholder Importance"
-                  label={{
-                    value: "Stakeholder Importance",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <ZAxis
-                  dataKey="Impact Score"
-                  range={[60, 200]}
-                  name="Impact Score"
-                />
-                <Tooltip
-                  cursor={{ strokeDasharray: "3 3" }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const d = payload[0].payload;
-                      return (
-                        <Paper sx={{ p: 1 }}>
-                          <Typography variant="subtitle2">
-                            <strong>{d["Main topic"]}</strong>
-                          </Typography>
-                          {d["Subtopic"] && (
-                            <div>Subtopic: {d["Subtopic"]}</div>
-                          )}
-                          <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
-                          <div>Impact Score: {d["Impact Score"]}</div>
-                          <div>Financial Risk: {d["Financial Risk"]}</div>
-                          <div>
-                            Stakeholder Importance:{" "}
-                            {d["Stakeholder Importance"]}
-                          </div>
-                        </Paper>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                {["E", "S", "G"].map((prefix, idx) => (
-                  <Scatter
-                    key={prefix}
-                    name={`Category ${prefix}`}
-                    data={data.filter(
-                      (d) =>
-                        d.ESRS?.startsWith(prefix) &&
-                        d["Impact Score"] != null &&
-                        d["Financial Risk"] != null &&
-                        d["Stakeholder Importance"] != null
-                    )}
-                    fill={["#1976d2", "#d32f2f", "#388e3c"][idx]}
+            <Box sx={{ minWidth: 600 }}>
+              <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart>
+                  <CartesianGrid />
+                  <XAxis
+                    type="number"
+                    dataKey="Financial Risk"
+                    name="Financial Risk"
+                    label={{
+                      value: "Financial Risk",
+                      position: "insideBottom",
+                      offset: -5,
+                    }}
                   />
-                ))}
-              </ScatterChart>
-            </ResponsiveContainer>
+                  <YAxis
+                    type="number"
+                    dataKey="Stakeholder Importance"
+                    name="Stakeholder Importance"
+                    label={{
+                      value: "Stakeholder Importance",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                  />
+                  <ZAxis
+                    dataKey="Impact Score"
+                    range={[60, 200]}
+                    name="Impact Score"
+                  />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3" }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const d = payload[0].payload;
+                        return (
+                          <Paper sx={{ p: 1 }}>
+                            <Typography variant="subtitle2">
+                              <strong>{d["Main topic"]}</strong>
+                            </Typography>
+                            {d["Subtopic"] && (
+                              <div>Subtopic: {d["Subtopic"]}</div>
+                            )}
+                            {d["Sub-subtopic"] && (
+                              <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
+                            )}
+                            <div>Impact Score: {d["Impact Score"]}</div>
+                            <div>Financial Risk: {d["Financial Risk"]}</div>
+                            <div>
+                              Stakeholder Importance:{" "}
+                              {d["Stakeholder Importance"]}
+                            </div>
+                          </Paper>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  {["E", "S", "G"].map((prefix, idx) => (
+                    <Scatter
+                      key={prefix}
+                      name={`Category ${prefix}`}
+                      data={data.filter(
+                        (d) =>
+                          d.ESRS?.startsWith(prefix) &&
+                          d["Impact Score"] != null &&
+                          d["Financial Risk"] != null &&
+                          d["Stakeholder Importance"] != null &&
+                          (!filterCategory ||
+                            d.ESRS?.startsWith(filterCategory))
+                      )}
+                      fill={["#1976d2", "#d32f2f", "#388e3c"][idx]}
+                    />
+                  ))}
+                </ScatterChart>
+              </ResponsiveContainer>
+            </Box>
           </Paper>
         </Grid>
 
@@ -558,7 +593,7 @@ export const MaterialityUploader: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Topic Details (Grouped)
             </Typography>
-            <TableContainer>
+            <TableContainer sx={{ overflowX: "auto" }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>

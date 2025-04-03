@@ -48,7 +48,7 @@ export function Navbar() {
   if (!userStatus) return null;
 
   return (
-    <AppBar position="static" color="primary" sx={{ width: "100vw" }}>
+    <AppBar position="static" color="primary" sx={{ width: "100%" }}>
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <img src="logos/full.png" alt="ESG Logo" style={{ height: "40px" }} />
