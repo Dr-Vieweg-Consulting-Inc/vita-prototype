@@ -17,6 +17,7 @@ import {
   Grid,
   IconButton,
   Stack,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -389,14 +390,17 @@ export const MaterialityUploader: React.FC = () => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [form, setForm] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoading(true);
     const file = e.target.files?.[0];
     if (!file) return;
     const parsed = await parseMaterialityExcel(file);
     const flat = flattenMateriality(parsed);
     setData(flat.map((d, i) => ({ id: i + 1, ...d })));
+    setLoading(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -413,6 +417,10 @@ export const MaterialityUploader: React.FC = () => {
   };
 
   const handleEdit = (item: any) => {
+    const formSection = document.getElementById("form-section");
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: "smooth" });
+    }
     setForm({ ...item });
   };
 
@@ -470,10 +478,13 @@ export const MaterialityUploader: React.FC = () => {
         >
           Download Excel
         </Button>
+        {loading && (
+          <CircularProgress size={24} color="primary" sx={{ mt: 1 }} />
+        )}
       </Stack>
 
       {form && (
-        <Paper sx={{ p: 2, my: 2 }}>
+        <Paper id="form-section" sx={{ p: 2, my: 2 }}>
           <Typography variant="h6" gutterBottom>
             {form.id !== null ? "Edit ESG Topic" : "Add ESG Topic"}
           </Typography>
