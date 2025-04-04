@@ -1,4 +1,3 @@
-// src/components/MaterialityUploader.tsx
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import {
@@ -32,6 +31,7 @@ import {
   ResponsiveContainer,
   Label,
 } from "recharts";
+import { UpdateForm } from "./Form";
 
 interface MaterialityRow {
   [key: string]: string | number | undefined;
@@ -119,208 +119,6 @@ export const parseMaterialityExcel = async (file: File) => {
   });
 };
 
-export const MaterialityUploader2 = () => {
-  const [rows, setRows] = useState<MaterialityRow[]>([]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const parsed = await parseMaterialityExcel(file);
-      console.log("Parsed ESG Data:", parsed);
-      // setNestedData(parsed); // set your state or pass it to a component
-    } catch (err) {
-      console.error("Failed to parse Excel:", err);
-    }
-
-    return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const data = evt.target?.result;
-      const workbook = XLSX.read(data, { type: "binary" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json<any>(sheet, {
-        defval: "",
-      });
-
-      console.log("show json ----> ", json);
-
-      let abc: any = {};
-
-      for (let i = 2; i < json.length; i++) {
-        const row = json[i];
-
-        // console.log("pray: ", row.__EMPTY);
-
-        abc;
-      }
-
-      // setRows(json);
-    };
-    reader.readAsBinaryString(file);
-  };
-
-  const handleChange = (
-    index: number,
-    field: string,
-    value: string | number
-  ) => {
-    const updated = [...rows];
-    updated[index][field] =
-      field.includes("Score") ||
-      field.includes("Risk") ||
-      field.includes("Importance") ||
-      field === "Total Score Inside-Out"
-        ? parseFloat(value as string)
-        : value;
-    setRows(updated);
-  };
-
-  const handleDownload = () => {
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Materiality");
-    XLSX.writeFile(workbook, "materiality_updated.xlsx");
-  };
-
-  return (
-    <Container maxWidth="xl">
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant="h4" gutterBottom>
-          Materiality Analysis Upload & Visualization
-        </Typography>
-
-        <Button variant="contained" component="label" sx={{ mt: 2 }}>
-          Upload Excel File
-          <input
-            type="file"
-            hidden
-            onChange={handleFileUpload}
-            accept=".xlsx,.xls"
-          />
-        </Button>
-
-        {rows.length > 0 && (
-          <>
-            <Button variant="outlined" onClick={handleDownload} sx={{ ml: 2 }}>
-              Download Updated Excel
-            </Button>
-
-            <Paper
-              sx={{
-                mt: 4,
-                maxHeight: 500,
-                overflow: "auto",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <Table size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    {Object.keys(rows[0]).map((key) => (
-                      <TableCell key={key} sx={{ minWidth: 150 }}>
-                        {key}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows.map((row, idx) => (
-                    <TableRow key={idx}>
-                      {Object.entries(row).map(([key, value]) => (
-                        <TableCell key={key}>
-                          <TextField
-                            variant="standard"
-                            fullWidth
-                            value={value}
-                            onChange={(e) =>
-                              handleChange(idx, key, e.target.value)
-                            }
-                          />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
-
-            <Typography variant="h6" sx={{ mt: 4 }}>
-              Materiality Matrix (Financial Risk vs Stakeholder Importance)
-            </Typography>
-
-            <ResponsiveContainer width="100%" height={400}>
-              <ScatterChart>
-                <CartesianGrid />
-                <XAxis
-                  type="number"
-                  dataKey="Financial Risk"
-                  name="Financial Risk"
-                  domain={[0, 10]}
-                >
-                  <Label
-                    value="Financial Risk"
-                    position="insideBottom"
-                    offset={-5}
-                  />
-                </XAxis>
-                <YAxis
-                  type="number"
-                  dataKey="Stakeholder Importance"
-                  name="Stakeholder Importance"
-                  domain={[0, 10]}
-                >
-                  <Label
-                    value="Stakeholder Importance"
-                    angle={-90}
-                    position="insideLeft"
-                    offset={-5}
-                  />
-                </YAxis>
-                <ZAxis
-                  type="number"
-                  dataKey="Impact Score"
-                  range={[100, 500]}
-                  name="Impact Score"
-                />
-                <Tooltip
-                  cursor={{ strokeDasharray: "3 3" }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const d = payload[0].payload;
-                      return (
-                        <Paper sx={{ p: 1 }}>
-                          <Typography variant="subtitle2">
-                            <strong>{d["Main topic"]}</strong>
-                          </Typography>
-                          <div>Subtopic: {d["Subtopic"]}</div>
-                          <div>Sub-subtopic: {d["Sub-subtopic"]}</div>
-                          <div>Impact Score: {d["Impact Score"]}</div>
-                          <div>Financial Risk: {d["Financial Risk"]}</div>
-                          <div>
-                            Stakeholder Importance:{" "}
-                            {d["Stakeholder Importance"]}
-                          </div>
-                        </Paper>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Scatter name="Topics" data={rows} fill="#1976d2" />
-              </ScatterChart>
-            </ResponsiveContainer>
-          </>
-        )}
-      </Box>
-    </Container>
-  );
-};
-
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 interface MaterialityRow {
   [key: string]: string | number | null;
   ESRS?: string;
@@ -354,38 +152,6 @@ export const flattenMateriality = (
   return result;
 };
 
-// import React, { useState } from "react";
-// import {
-//   Container,
-//   Typography,
-//   Paper,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   TextField,
-//   Button,
-//   Box,
-//   IconButton,
-//   Grid,
-// } from "@mui/material";
-// import DeleteIcon from "@mui/icons-material/Delete";
-// import EditIcon from "@mui/icons-material/Edit";
-// import {
-//   ResponsiveContainer,
-//   ScatterChart,
-//   Scatter,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ZAxis,
-// } from "recharts";
-// import { parseMaterialityExcel } from "./utils/parseMaterialityExcel"; // You should have this function ready
-// import { flattenMateriality } from "./utils/flattenMateriality";
-
 export const MaterialityUploader: React.FC = () => {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -407,7 +173,7 @@ export const MaterialityUploader: React.FC = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (form: any) => {
     if (form.id !== undefined && form.id !== null) {
       setData((prev) =>
         prev.map((item) => (item.id === form.id ? { ...item, ...form } : item))
@@ -417,12 +183,36 @@ export const MaterialityUploader: React.FC = () => {
   };
 
   const handleEdit = (item: any) => {
-    const formSection = document.getElementById("form-section");
-    if (formSection) {
-      formSection.scrollIntoView({ behavior: "smooth" });
-    }
+    // const formSection = document.getElementById("form-section");
+    // console.log("--- a ---");
+    // if (formSection) {
+    //   console.log("--- b ---");
+    //   formSection.scrollIntoView({ behavior: "smooth" });
+    // }
     setForm({ ...item });
   };
+
+  // const formExistsLastRender = useRef<boolean>(false);
+
+  // useEffect(() => {
+  //   if (formExistsLastRender.current) return;
+  //   if (!form)
+  //     return () => {
+  //       formExistsLastRender.current = false;
+  //     };
+  //   const formSection = document.getElementById("form-section");
+  //   console.log("--- a ---");
+
+  //   if (formSection) {
+  //     console.log("--- b ---");
+
+  //     formSection.scrollIntoView({ behavior: "smooth" });
+  //   }
+
+  //   return () => {
+  //     formExistsLastRender.current = true;
+  //   };
+  // }, [form, formExistsLastRender]);
 
   const handleDelete = (id: number) => {
     setData((prev) => prev.filter((item) => item.id !== id));
@@ -443,76 +233,53 @@ export const MaterialityUploader: React.FC = () => {
         ESG Materiality Upload + Editor
       </Typography>
 
-      <Stack direction="row" spacing={2} sx={{ my: 2 }}>
-        <Button variant="contained" component="label">
-          Upload Excel File
-          <input
-            type="file"
-            hidden
-            onChange={handleFileUpload}
-            accept=".xlsx,.xls"
-          />
-        </Button>
+      <Stack direction="column" spacing={2} sx={{ my: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ my: 2 }}>
+          <Button variant="contained" component="label">
+            Upload Excel File
+            <input
+              type="file"
+              hidden
+              onChange={handleFileUpload}
+              accept=".xlsx,.xls"
+            />
+          </Button>
+
+          <Button
+            variant="outlined"
+            disabled={!data.length}
+            onClick={() => {
+              const exportData = data.map(({ id, ...rest }) => rest);
+              const worksheet = XLSX.utils.json_to_sheet(exportData);
+              const workbook = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(workbook, worksheet, "Materiality");
+              XLSX.writeFile(workbook, "materiality_updated.xlsx");
+            }}
+          >
+            Download Excel
+          </Button>
+          {loading && (
+            <CircularProgress size={24} color="primary" sx={{ mt: 1 }} />
+          )}
+        </Stack>
         <TextField
           select
           label="Filter ESG Category"
-          value={filterCategory ?? ""}
-          onChange={(e) => setFilterCategory(e.target.value || null)}
+          value={filterCategory ?? "All"}
+          onChange={(e) =>
+            setFilterCategory(e.target.value === "All" ? null : e.target.value)
+          }
           SelectProps={{ native: true }}
           sx={{ width: 200 }}
         >
-          <option value="">All</option>
+          <option value="All">All</option>
           <option value="E">Environment (E)</option>
           <option value="S">Social (S)</option>
           <option value="G">Governance (G)</option>
         </TextField>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            const exportData = data.map(({ id, ...rest }) => rest);
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Materiality");
-            XLSX.writeFile(workbook, "materiality_updated.xlsx");
-          }}
-        >
-          Download Excel
-        </Button>
-        {loading && (
-          <CircularProgress size={24} color="primary" sx={{ mt: 1 }} />
-        )}
       </Stack>
 
-      {form && (
-        <Paper id="form-section" sx={{ p: 2, my: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            {form.id !== null ? "Edit ESG Topic" : "Add ESG Topic"}
-          </Typography>
-          <Box component="form" noValidate autoComplete="off">
-            {Object.keys(form).map((key) =>
-              key !== "id" ? (
-                <TextField
-                  key={key}
-                  name={key}
-                  label={key}
-                  fullWidth
-                  margin="normal"
-                  value={form[key] ?? ""}
-                  onChange={handleChange}
-                />
-              ) : null
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={handleSubmit}
-            >
-              Update
-            </Button>
-          </Box>
-        </Paper>
-      )}
+      <UpdateForm form={form} onSubmit={handleSubmit} />
 
       <Grid container spacing={4} direction="column">
         <Grid item xs={12}>
