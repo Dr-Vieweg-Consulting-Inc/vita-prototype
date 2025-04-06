@@ -41,7 +41,7 @@
   color: #888;
 } */
 
-body {
+/* body {
   font-family: "Roboto", sans-serif;
   background-color: #f4f4f4;
 
@@ -60,4 +60,14 @@ body {
 }
 .mt-2 {
   margin-top: 20px;
-}
+} */
+/* 
+html,
+body,
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  background-color: blue;
+} */
