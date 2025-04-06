@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import {
   Container,
   Typography,
-  Stack,
-  // Tabs,
+  // Stack,
+  Fade,
+  Box,
+  // Tabs,Fade
 } from "@mui/material";
 import { Tabs } from "../../components";
 import { DataPoints } from "./Details";
@@ -24,29 +26,10 @@ export const MaterialityUploader: React.FC = () => {
     groupedData[main][sub].push(row);
   });
 
-  function getTabComponent() {
-    switch (tab) {
-      case 0:
-        return <Overview data={data} />;
-      case 1:
-        return <DataPoints data={data} setData={setData} />;
-      case 2:
-        return (
-          <ImportExport
-            data={data}
-            setData={setData}
-            onImportComplete={() => setTab(0)}
-          />
-        );
-      default:
-        return null;
-    }
-  }
-
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        ESG Materiality Upload + Editor
+        Materiality Analysis
       </Typography>
 
       <Tabs
@@ -54,7 +37,28 @@ export const MaterialityUploader: React.FC = () => {
         onChange={(value) => setTab(value)}
         labels={["Overview", "Details", "Import / Export"]}
       />
-      <Stack mt={2}>{getTabComponent()}</Stack>
+
+      <Box sx={{ p: 3 }}>
+        <Fade in={tab === 0} timeout={300}>
+          <Container style={{ display: tab === 0 ? "block" : "none" }}>
+            <Overview data={data} />
+          </Container>
+        </Fade>
+        <Fade in={tab === 1} timeout={300}>
+          <Container style={{ display: tab === 1 ? "block" : "none" }}>
+            <DataPoints data={data} setData={setData} />
+          </Container>
+        </Fade>
+        <Fade in={tab === 2} timeout={300}>
+          <Container style={{ display: tab === 2 ? "block" : "none" }}>
+            <ImportExport
+              data={data}
+              setData={setData}
+              onImportComplete={() => setTab(0)}
+            />
+          </Container>
+        </Fade>
+      </Box>
     </Container>
   );
 };
