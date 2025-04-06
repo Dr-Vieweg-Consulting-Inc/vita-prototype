@@ -16,6 +16,24 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { UpdateForm } from "./Form";
 
+const statuses = [
+  "Approved",
+  "In Progress",
+  "Pending Review",
+  "Rejected",
+  "Not Started",
+];
+const statusColors: Record<string, string> = {
+  Approved: "green",
+  "In Progress": "blue",
+  "Pending Review": "orange",
+  Rejected: "red",
+  "Not Started": "gray",
+};
+
+const getRandomStatus = () =>
+  statuses[Math.floor(Math.random() * statuses.length)];
+
 interface Props {
   data: any[];
   setData: Dispatch<SetStateAction<any[]>>;
@@ -35,12 +53,6 @@ export function DataPoints({ data, setData }: Props) {
   };
 
   const handleEdit = (item: any) => {
-    // const formSection = document.getElementById("form-section");
-    // console.log("--- a ---");
-    // if (formSection) {
-    //   console.log("--- b ---");
-    //   formSection.scrollIntoView({ behavior: "smooth" });
-    // }
     setForm({ ...item });
   };
 
@@ -76,6 +88,7 @@ export function DataPoints({ data, setData }: Props) {
                 <TableCell>Impact Score</TableCell>
                 <TableCell>Financial Risk</TableCell>
                 <TableCell>Stakeholder Importance</TableCell>
+                <TableCell>Status</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -84,7 +97,7 @@ export function DataPoints({ data, setData }: Props) {
                 <React.Fragment key={main}>
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       sx={{
                         backgroundColor: "#f0f0f0",
                         fontWeight: "bold",
@@ -97,7 +110,7 @@ export function DataPoints({ data, setData }: Props) {
                     <React.Fragment key={sub}>
                       <TableRow>
                         <TableCell
-                          colSpan={8}
+                          colSpan={9}
                           sx={{ backgroundColor: "#fafafa", pl: 4 }}
                         >
                           {sub}
@@ -114,6 +127,16 @@ export function DataPoints({ data, setData }: Props) {
                             <TableCell>{row["Financial Risk"]}</TableCell>
                             <TableCell>
                               {row["Stakeholder Importance"]}
+                            </TableCell>
+                            <TableCell>
+                              <Typography
+                                sx={{
+                                  color: statusColors[getRandomStatus()],
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                {getRandomStatus()}
+                              </Typography>
                             </TableCell>
                             <TableCell align="right">
                               <IconButton onClick={() => handleEdit(row)}>
@@ -135,7 +158,7 @@ export function DataPoints({ data, setData }: Props) {
                           </TableRow>
                           {expandedId === row.id && (
                             <TableRow>
-                              <TableCell colSpan={8}>
+                              <TableCell colSpan={9}>
                                 <Box
                                   sx={{
                                     fontSize: 13,
@@ -153,6 +176,7 @@ export function DataPoints({ data, setData }: Props) {
                                         "Impact Score",
                                         "Financial Risk",
                                         "Stakeholder Importance",
+                                        "status",
                                       ].includes(key)
                                     )
                                       return null;
@@ -162,6 +186,18 @@ export function DataPoints({ data, setData }: Props) {
                                       </div>
                                     );
                                   })}
+                                  <div>
+                                    <strong>Assigned To:</strong>{" "}
+                                    {row.assignee || "Unassigned"}
+                                  </div>
+                                  <div>
+                                    <strong>Approved By:</strong>{" "}
+                                    {row.approvedBy || "Pending"}
+                                  </div>
+                                  <div>
+                                    <strong>Notes:</strong>{" "}
+                                    {row.notes || "None"}
+                                  </div>
                                 </Box>
                               </TableCell>
                             </TableRow>
