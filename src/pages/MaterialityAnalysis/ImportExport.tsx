@@ -142,9 +142,11 @@ export const flattenMateriality = (
 interface Props {
   data: any[];
   setData: Dispatch<SetStateAction<any[]>>;
+  //   setTab: Dispatch<SetStateAction<number>>;
+  onImportComplete: () => void;
 }
 
-export function ImportExport({ data, setData }: Props) {
+export function ImportExport({ data, setData, onImportComplete }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,6 +157,7 @@ export function ImportExport({ data, setData }: Props) {
     const flat = flattenMateriality(parsed);
     setData(flat.map((d, i) => ({ id: i + 1, ...d })));
     setLoading(false);
+    onImportComplete();
   };
 
   return (

@@ -1,38 +1,11 @@
 import React, { useState } from "react";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import {
   Container,
   Typography,
-  Button,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  TableContainer,
-  Grid,
-  IconButton,
   Stack,
-  CircularProgress,
   // Tabs,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  ZAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Label,
-} from "recharts";
-import { UpdateForm } from "./Form";
 import { Tabs } from "../../components";
 import { DataPoints } from "./Details";
 import { ImportExport } from "./ImportExport";
@@ -58,7 +31,13 @@ export const MaterialityUploader: React.FC = () => {
       case 1:
         return <DataPoints data={data} setData={setData} />;
       case 2:
-        return <ImportExport data={data} setData={setData} />;
+        return (
+          <ImportExport
+            data={data}
+            setData={setData}
+            onImportComplete={() => setTab(0)}
+          />
+        );
       default:
         return null;
     }
