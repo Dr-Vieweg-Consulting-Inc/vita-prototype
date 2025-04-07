@@ -45,16 +45,16 @@ import { StatusPieChart } from "./StatusPieChart";
 //   { id: 3, name: "Company C" },
 // ];
 
-const dummyReports = [
-  { entityId: 1, reportingYear: 2022, complianceScore: 85, status: "Approved" },
-  {
-    entityId: 1,
-    reportingYear: 2023,
-    complianceScore: 90,
-    status: "Pending Review",
-  },
-  { entityId: 2, reportingYear: 2022, complianceScore: 75, status: "Approved" },
-];
+// const dummyReports = [
+//   { entityId: 1, reportingYear: 2022, complianceScore: 85, status: "Approved" },
+//   {
+//     entityId: 1,
+//     reportingYear: 2023,
+//     complianceScore: 90,
+//     status: "Pending Review",
+//   },
+//   { entityId: 2, reportingYear: 2022, complianceScore: 75, status: "Approved" },
+// ];
 
 // const dummyCompliance = [
 //   { entityId: 1, score: 90 },
@@ -68,7 +68,7 @@ const dummyReports = [
 //   { entityId: 2, id: 3, name: "Charlie Brown", role: "Data Entry" },
 // ];
 
-const entityReports = dummyReports.filter((report) => report.entityId === 0);
+// const entityReports = dummyReports.filter((report) => report.entityId === 0);
 
 interface Props {
   data: any[];
@@ -88,19 +88,13 @@ export function Overview({ data }: Props) {
           <Grid item xs={12} md={4}>
             <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
               <Typography variant="h6">Total Reports</Typography>
-              <Typography variant="h4">{entityReports.length}</Typography>
+              <Typography variant="h4">{105}</Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} md={4}>
             <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
               <Typography variant="h6">Pending Reviews</Typography>
-              <Typography variant="h4">
-                {
-                  entityReports.filter(
-                    (report) => report.status === "Pending Review"
-                  ).length
-                }
-              </Typography>
+              <Typography variant="h4">{12}</Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} md={4}>

@@ -149,15 +149,45 @@ interface Props {
 export function ImportExport({ data, setData, onImportComplete }: Props) {
   const [loading, setLoading] = useState(false);
 
+  // Function to handle manual file uploads
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoading(true);
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setLoading(false);
+      return;
+    }
     const parsed = await parseMaterialityExcel(file);
     const flat = flattenMateriality(parsed);
     setData(flat.map((d, i) => ({ id: i + 1, ...d })));
     setLoading(false);
     onImportComplete();
+  };
+
+  // Function to load a test Excel file from public folder
+  const loadTestFile = async () => {
+    setLoading(true);
+    try {
+      // Fetch the Excel file from the public folder
+      const response = await fetch("testFiles/scored.xlsx");
+      if (!response.ok) {
+        throw new Error(`Error loading test file: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+
+      // Parse the blob into a file object
+      const file = new File([blob], "scored.xlsx", { type: blob.type });
+
+      // Parse and set data
+      const parsed = await parseMaterialityExcel(file);
+      const flat = flattenMateriality(parsed);
+      setData(flat.map((d, i) => ({ id: i + 1, ...d })));
+      setLoading(false);
+      onImportComplete();
+    } catch (err) {
+      console.error("Error loading test Excel file:", err);
+      setLoading(false);
+    }
   };
 
   return (
@@ -185,6 +215,11 @@ export function ImportExport({ data, setData, onImportComplete }: Props) {
       >
         Download Excel
       </Button>
+
+      <Button variant="outlined" onClick={loadTestFile}>
+        Load Test Excel
+      </Button>
+
       {loading && <CircularProgress size={24} color="primary" sx={{ mt: 1 }} />}
     </Stack>
   );

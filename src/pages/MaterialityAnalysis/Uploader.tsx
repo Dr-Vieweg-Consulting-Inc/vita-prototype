@@ -17,14 +17,14 @@ export const MaterialityUploader: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
   const [tab, setTab] = useState<number>(0);
 
-  const groupedData: Record<string, Record<string, any[]>> = {};
-  data.forEach((row) => {
-    const main = row["Main topic"] || "Uncategorized";
-    const sub = row["Subtopic"] || "General";
-    if (!groupedData[main]) groupedData[main] = {};
-    if (!groupedData[main][sub]) groupedData[main][sub] = [];
-    groupedData[main][sub].push(row);
-  });
+  // const groupedData: Record<string, Record<string, any[]>> = {};
+  // data.forEach((row) => {
+  //   const main = row["Main topic"] || "Uncategorized";
+  //   const sub = row["Subtopic"] || "General";
+  //   if (!groupedData[main]) groupedData[main] = {};
+  //   if (!groupedData[main][sub]) groupedData[main][sub] = [];
+  //   groupedData[main][sub].push(row);
+  // });
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>

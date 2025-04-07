@@ -11,6 +11,7 @@ import {
   TableContainer,
   Grid,
   IconButton,
+  Collapse,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,6 +39,8 @@ interface Props {
   data: any[];
   setData: Dispatch<SetStateAction<any[]>>;
 }
+
+const statusGlobalArr: string[] = [];
 
 export function DataPoints({ data, setData }: Props) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -71,6 +74,7 @@ export function DataPoints({ data, setData }: Props) {
 
   if (form) return <UpdateForm form={form} onSubmit={handleSubmit} />;
 
+  let index: number = 0;
   return (
     <Grid item xs={12}>
       <Paper sx={{ p: 2 }}>
@@ -116,94 +120,107 @@ export function DataPoints({ data, setData }: Props) {
                           {sub}
                         </TableCell>
                       </TableRow>
-                      {rows.map((row) => (
-                        <React.Fragment key={row.id}>
-                          <TableRow>
-                            <TableCell>{row["ESRS"]}</TableCell>
-                            <TableCell>{row["Main topic"]}</TableCell>
-                            <TableCell>{row["Subtopic"]}</TableCell>
-                            <TableCell>{row["Sub-subtopic"]}</TableCell>
-                            <TableCell>{row["Impact Score"]}</TableCell>
-                            <TableCell>{row["Financial Risk"]}</TableCell>
-                            <TableCell>
-                              {row["Stakeholder Importance"]}
-                            </TableCell>
-                            <TableCell>
-                              <Typography
-                                sx={{
-                                  color: statusColors[getRandomStatus()],
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                {getRandomStatus()}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right">
-                              <IconButton onClick={() => handleEdit(row)}>
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton onClick={() => handleDelete(row.id)}>
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                onClick={() =>
-                                  setExpandedId(
-                                    expandedId === row.id ? null : row.id
-                                  )
-                                }
-                              >
-                                {expandedId === row.id ? "▲" : "▼"}
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                          {expandedId === row.id && (
+                      {rows.map((row) => {
+                        const i = index++;
+                        let status: string;
+                        if (statusGlobalArr.length < i + 1) {
+                          status = getRandomStatus();
+                          statusGlobalArr.push(status);
+                        } else status = statusGlobalArr[i];
+                        return (
+                          <React.Fragment key={row.id}>
                             <TableRow>
-                              <TableCell colSpan={9}>
-                                <Box
+                              <TableCell>{row["ESRS"]}</TableCell>
+                              <TableCell>{row["Main topic"]}</TableCell>
+                              <TableCell>{row["Subtopic"]}</TableCell>
+                              <TableCell>{row["Sub-subtopic"]}</TableCell>
+                              <TableCell>{row["Impact Score"]}</TableCell>
+                              <TableCell>{row["Financial Risk"]}</TableCell>
+                              <TableCell>
+                                {row["Stakeholder Importance"]}
+                              </TableCell>
+                              <TableCell>
+                                <Typography
                                   sx={{
-                                    fontSize: 13,
-                                    color: "text.secondary",
+                                    color: statusColors[status],
+                                    fontWeight: "bold",
                                   }}
                                 >
-                                  {Object.entries(row).map(([key, val]) => {
-                                    if (
-                                      [
-                                        "id",
-                                        "ESRS",
-                                        "Main topic",
-                                        "Subtopic",
-                                        "Sub-subtopic",
-                                        "Impact Score",
-                                        "Financial Risk",
-                                        "Stakeholder Importance",
-                                        "status",
-                                      ].includes(key)
+                                  {status}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="right">
+                                <IconButton onClick={() => handleEdit(row)}>
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  onClick={() => handleDelete(row.id)}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  onClick={() =>
+                                    setExpandedId(
+                                      expandedId === row.id ? null : row.id
                                     )
-                                      return null;
-                                    return (
-                                      <div key={key}>
-                                        <strong>{key}</strong>: {val ?? "-"}
-                                      </div>
-                                    );
-                                  })}
-                                  <div>
-                                    <strong>Assigned To:</strong>{" "}
-                                    {row.assignee || "Unassigned"}
-                                  </div>
-                                  <div>
-                                    <strong>Approved By:</strong>{" "}
-                                    {row.approvedBy || "Pending"}
-                                  </div>
-                                  <div>
-                                    <strong>Notes:</strong>{" "}
-                                    {row.notes || "None"}
-                                  </div>
-                                </Box>
+                                  }
+                                >
+                                  {expandedId === row.id ? "▲" : "▼"}
+                                </IconButton>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </React.Fragment>
-                      ))}
+                            <TableRow>
+                              <TableCell colSpan={9}>
+                                <Collapse
+                                  in={expandedId === row.id}
+                                  timeout={500}
+                                >
+                                  <Box
+                                    sx={{
+                                      fontSize: 13,
+                                      color: "text.secondary",
+                                    }}
+                                  >
+                                    {Object.entries(row).map(([key, val]) => {
+                                      if (
+                                        [
+                                          "id",
+                                          "ESRS",
+                                          "Main topic",
+                                          "Subtopic",
+                                          "Sub-subtopic",
+                                          "Impact Score",
+                                          "Financial Risk",
+                                          "Stakeholder Importance",
+                                          "status",
+                                        ].includes(key)
+                                      )
+                                        return null;
+                                      return (
+                                        <div key={key}>
+                                          <strong>{key}</strong>: {val ?? "-"}
+                                        </div>
+                                      );
+                                    })}
+                                    <div>
+                                      <strong>Assigned To:</strong>{" "}
+                                      {row.assignee || "Unassigned"}
+                                    </div>
+                                    <div>
+                                      <strong>Approved By:</strong>{" "}
+                                      {row.approvedBy || "Pending"}
+                                    </div>
+                                    <div>
+                                      <strong>Notes:</strong>{" "}
+                                      {row.notes || "None"}
+                                    </div>
+                                  </Box>
+                                </Collapse>
+                              </TableCell>
+                            </TableRow>
+                          </React.Fragment>
+                        );
+                      })}
                     </React.Fragment>
                   ))}
                 </React.Fragment>
