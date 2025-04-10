@@ -70,12 +70,13 @@ export function Matrix({ data }: Props) {
 
       <Box sx={{ minWidth: 600 }}>
         <ResponsiveContainer width="100%" height={400}>
-          <ScatterChart>
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid />
             <XAxis
               type="number"
               dataKey="Financial Risk"
               name="Financial Risk"
+              domain={[0, 10]}
               label={{
                 value: "Financial Risk",
                 position: "insideBottom",
@@ -86,6 +87,7 @@ export function Matrix({ data }: Props) {
               type="number"
               dataKey="Stakeholder Importance"
               name="Stakeholder Importance"
+              domain={[0, 10]}
               label={{
                 value: "Stakeholder Importance",
                 angle: -90,
