@@ -169,14 +169,16 @@ export function ImportExport({ data, setData, onImportComplete }: Props) {
     setLoading(true);
     try {
       // Fetch the Excel file from the public folder
-      const response = await fetch("testFiles/scored.xlsx");
+      const response = await fetch("testFiles/scoredTESTAPR10.xlsx");
       if (!response.ok) {
         throw new Error(`Error loading test file: ${response.statusText}`);
       }
       const blob = await response.blob();
 
       // Parse the blob into a file object
-      const file = new File([blob], "scored.xlsx", { type: blob.type });
+      const file = new File([blob], "scoredTESTAPR10.xlsx", {
+        type: blob.type,
+      });
 
       // Parse and set data
       const parsed = await parseMaterialityExcel(file);
