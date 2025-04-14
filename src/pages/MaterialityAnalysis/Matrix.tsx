@@ -1,27 +1,5 @@
-import React, { SetStateAction, useState, Dispatch } from "react";
-import * as XLSX from "xlsx";
-import {
-  Container,
-  Typography,
-  Button,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  TableContainer,
-  Grid,
-  IconButton,
-  Stack,
-  CircularProgress,
-  styled,
-  // Tabs,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import React, { useState } from "react";
+import { Paper, Typography, Box, Stack, TextField } from "@mui/material";
 import {
   ScatterChart,
   Scatter,
@@ -31,18 +9,25 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Label,
 } from "recharts";
-import { UpdateForm } from "./Form";
-import { Tabs } from "../../components";
 
 interface Props {
-  data: any[];
-  // setData: Dispatch<SetStateAction<any[]>>;
+  dataInsideOut: any[];
+  dataOutsideIn: any[];
 }
 
-export function Matrix({ data }: Props) {
+export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [filterSource, setFilterSource] = useState<string>("All");
+
+  const combinedData = [
+    ...(filterSource === "All" || filterSource === "Inside-Out"
+      ? dataInsideOut
+      : []),
+    ...(filterSource === "All" || filterSource === "Outside-In"
+      ? dataOutsideIn
+      : []),
+  ];
 
   return (
     <Paper sx={{ p: 2, overflowX: "auto" }}>
@@ -51,6 +36,18 @@ export function Matrix({ data }: Props) {
       </Typography>
 
       <Stack direction="row" spacing={2} sx={{ my: 2 }}>
+        <TextField
+          select
+          label="Data Source"
+          value={filterSource}
+          onChange={(e) => setFilterSource(e.target.value)}
+          SelectProps={{ native: true }}
+          sx={{ width: 200 }}
+        >
+          <option value="All">All</option>
+          <option value="Inside-Out">Inside-Out</option>
+          <option value="Outside-In">Outside-In</option>
+        </TextField>
         <TextField
           select
           label="Filter ESG Category"
@@ -128,7 +125,7 @@ export function Matrix({ data }: Props) {
               <Scatter
                 key={prefix}
                 name={`Category ${prefix}`}
-                data={data.filter(
+                data={combinedData.filter(
                   (d) =>
                     d.ESRS?.startsWith(prefix) &&
                     d["Impact Score"] != null &&

@@ -70,12 +70,17 @@ import { StatusPieChart } from "./StatusPieChart";
 
 // const entityReports = dummyReports.filter((report) => report.entityId === 0);
 
+// interface Props {
+//   data: any[];
+//   //   setData: Dispatch<SetStateAction<any[]>>;
+// }
+
 interface Props {
-  data: any[];
-  //   setData: Dispatch<SetStateAction<any[]>>;
+  dataInsideOut: any[];
+  dataOutsideIn: any[];
 }
 
-export function Overview({ data }: Props) {
+export function Overview({ dataInsideOut, dataOutsideIn }: Props) {
   return (
     <Box width="100%">
       <Grid container spacing={4} direction="column">
@@ -106,7 +111,7 @@ export function Overview({ data }: Props) {
         </Grid>
 
         <Grid item xs={12}>
-          <Matrix data={data} />
+          <Matrix dataInsideOut={dataInsideOut} dataOutsideIn={dataOutsideIn} />
         </Grid>
 
         <Grid item xs={12}>

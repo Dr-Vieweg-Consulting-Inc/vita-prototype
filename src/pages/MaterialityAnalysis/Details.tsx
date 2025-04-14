@@ -12,6 +12,8 @@ import {
   Grid,
   IconButton,
   Collapse,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -36,13 +38,23 @@ const getRandomStatus = () =>
   statuses[Math.floor(Math.random() * statuses.length)];
 
 interface Props {
-  data: any[];
-  setData: Dispatch<SetStateAction<any[]>>;
+  dataInsideOut: any[];
+  setDataInsideOut: Dispatch<SetStateAction<any[]>>;
+  dataOutsideIn: any[];
+  setDataOutsideIn: Dispatch<SetStateAction<any[]>>;
 }
 
 const statusGlobalArr: string[] = [];
 
-export function DataPoints({ data, setData }: Props) {
+export function DataPoints({
+  dataInsideOut,
+  setDataInsideOut,
+  dataOutsideIn,
+  setDataOutsideIn,
+}: Props) {
+  const [tabIndex, setTabIndex] = useState(0);
+  const data = tabIndex === 0 ? dataInsideOut : dataOutsideIn;
+  const setData = tabIndex === 0 ? setDataInsideOut : setDataOutsideIn;
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [form, setForm] = useState<any | null>(null);
 
@@ -78,7 +90,12 @@ export function DataPoints({ data, setData }: Props) {
   return (
     <Grid item xs={12}>
       <Paper sx={{ p: 2 }}>
-        <Typography variant="h6" gutterBottom>
+        <Tabs value={tabIndex} onChange={(_, i) => setTabIndex(i)}>
+          <Tab label="Inside-Out" />
+          <Tab label="Outside-In" />
+        </Tabs>
+
+        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
           Topic Details (Grouped)
         </Typography>
         <TableContainer sx={{ overflowX: "auto" }}>
@@ -102,10 +119,7 @@ export function DataPoints({ data, setData }: Props) {
                   <TableRow>
                     <TableCell
                       colSpan={9}
-                      sx={{
-                        backgroundColor: "#f0f0f0",
-                        fontWeight: "bold",
-                      }}
+                      sx={{ backgroundColor: "#f0f0f0", fontWeight: "bold" }}
                     >
                       {main}
                     </TableCell>

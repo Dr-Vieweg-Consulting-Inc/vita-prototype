@@ -14,7 +14,10 @@ import { ImportExport } from "./ImportExport";
 import { Overview } from "./Overview";
 
 export const MaterialityUploader: React.FC = () => {
-  const [data, setData] = useState<any[]>([]);
+  const [dataInsideOut, setDataInsideOut] = useState<any[]>([]);
+
+  const [dataOutsideIn, setDataOutsideIn] = useState<any[]>([]);
+
   const [tab, setTab] = useState<number>(0);
 
   // const groupedData: Record<string, Record<string, any[]>> = {};
@@ -41,19 +44,29 @@ export const MaterialityUploader: React.FC = () => {
       <Box sx={{ p: 3 }}>
         <Fade in={tab === 0} timeout={300}>
           <Container style={{ display: tab === 0 ? "block" : "none" }}>
-            <Overview data={data} />
+            <Overview
+              dataInsideOut={dataInsideOut}
+              dataOutsideIn={dataOutsideIn}
+            />
           </Container>
         </Fade>
         <Fade in={tab === 1} timeout={300}>
           <Container style={{ display: tab === 1 ? "block" : "none" }}>
-            <DataPoints data={data} setData={setData} />
+            <DataPoints
+              dataInsideOut={dataInsideOut}
+              setDataInsideOut={setDataInsideOut}
+              dataOutsideIn={dataOutsideIn}
+              setDataOutsideIn={setDataOutsideIn}
+            />
           </Container>
         </Fade>
         <Fade in={tab === 2} timeout={300}>
           <Container style={{ display: tab === 2 ? "block" : "none" }}>
             <ImportExport
-              data={data}
-              setData={setData}
+              dataInsideOut={dataInsideOut}
+              setDataInsideOut={setDataInsideOut}
+              dataOutsideIn={dataOutsideIn}
+              setDataOutsideIn={setDataOutsideIn}
               onImportComplete={() => setTab(0)}
             />
           </Container>

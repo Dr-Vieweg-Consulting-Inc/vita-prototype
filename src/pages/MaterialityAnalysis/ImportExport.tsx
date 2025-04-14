@@ -1,52 +1,6 @@
 import React, { SetStateAction, useState, Dispatch } from "react";
 import * as XLSX from "xlsx";
-import {
-  Container,
-  Typography,
-  Button,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  TableContainer,
-  Grid,
-  IconButton,
-  Stack,
-  CircularProgress,
-  styled,
-  // Tabs,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  ZAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Label,
-} from "recharts";
-import { UpdateForm } from "./Form";
-import { Tabs } from "../../components";
-
-interface MaterialityRow {
-  [key: string]: string | number | undefined;
-  ESRS?: string;
-  "Main topic"?: string;
-  Subtopic?: string;
-  "Sub-subtopic"?: string;
-  "Impact Score"?: number;
-  "Financial Risk"?: number;
-  "Stakeholder Importance"?: number;
-  [key: `Custom-${string}`]: any; // For additional custom columns
-}
+import { Button, Stack, CircularProgress } from "@mui/material";
 
 export const parseMaterialityExcel = async (file: File) => {
   return new Promise<Record<string, any>>((resolve, reject) => {
@@ -59,14 +13,12 @@ export const parseMaterialityExcel = async (file: File) => {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const allRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        // Use row 1 (index 1) for actual column headers
         const headers: string[] = allRows[1].map((h: any) =>
           h !== undefined && h !== null ? String(h).trim() : ""
         );
 
-        const contentRows = allRows.slice(2); // Data starts at row index 2
+        const contentRows = allRows.slice(2);
 
-        // Column index helpers
         const getIndex = (label: string) =>
           headers.findIndex((h) => h === label);
         const idxMain = getIndex("Main topic");
@@ -114,12 +66,8 @@ export const parseMaterialityExcel = async (file: File) => {
   });
 };
 
-// Converts nested data to flat array of rows
-export const flattenMateriality = (
-  data: Record<string, any>
-): MaterialityRow[] => {
-  const result: MaterialityRow[] = [];
-
+export const flattenMateriality = (data: Record<string, any>) => {
+  const result: any[] = [];
   for (const mainTopic in data) {
     const subtopics = data[mainTopic];
     for (const subtopic in subtopics) {
@@ -135,22 +83,30 @@ export const flattenMateriality = (
       }
     }
   }
-
   return result;
 };
 
 interface Props {
-  data: any[];
-  setData: Dispatch<SetStateAction<any[]>>;
-  //   setTab: Dispatch<SetStateAction<number>>;
+  dataInsideOut: any[];
+  setDataInsideOut: Dispatch<SetStateAction<any[]>>;
+  dataOutsideIn: any[];
+  setDataOutsideIn: Dispatch<SetStateAction<any[]>>;
   onImportComplete: () => void;
 }
 
-export function ImportExport({ data, setData, onImportComplete }: Props) {
+export function ImportExport({
+  dataInsideOut,
+  setDataInsideOut,
+  dataOutsideIn,
+  setDataOutsideIn,
+  onImportComplete,
+}: Props) {
   const [loading, setLoading] = useState(false);
 
-  // Function to handle manual file uploads
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    targetSetter: Dispatch<SetStateAction<any[]>>
+  ) => {
     setLoading(true);
     const file = e.target.files?.[0];
     if (!file) {
@@ -159,67 +115,91 @@ export function ImportExport({ data, setData, onImportComplete }: Props) {
     }
     const parsed = await parseMaterialityExcel(file);
     const flat = flattenMateriality(parsed);
-    setData(flat.map((d, i) => ({ id: i + 1, ...d })));
+    targetSetter(flat.map((d, i) => ({ id: i + 1, ...d })));
     setLoading(false);
     onImportComplete();
   };
 
-  // Function to load a test Excel file from public folder
-  const loadTestFile = async () => {
+  const loadTestFiles = async () => {
     setLoading(true);
     try {
-      // Fetch the Excel file from the public folder
-      const response = await fetch("testFiles/scoredTESTAPR10.xlsx");
-      if (!response.ok) {
-        throw new Error(`Error loading test file: ${response.statusText}`);
-      }
-      const blob = await response.blob();
+      const loadFile = async (
+        url: string,
+        setter: Dispatch<SetStateAction<any[]>>
+      ) => {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Error loading ${url}`);
+        const blob = await response.blob();
+        const file = new File([blob], url, { type: blob.type });
+        const parsed = await parseMaterialityExcel(file);
+        const flat = flattenMateriality(parsed);
+        setter(flat.map((d, i) => ({ id: i + 1, ...d })));
+      };
 
-      // Parse the blob into a file object
-      const file = new File([blob], "scoredTESTAPR10.xlsx", {
-        type: blob.type,
-      });
+      await Promise.all([
+        loadFile("testFiles/test1920ver2InOut.xlsx", setDataInsideOut),
+        loadFile("testFiles/test1920ver2OutIn.xlsx", setDataOutsideIn),
+      ]);
 
-      // Parse and set data
-      const parsed = await parseMaterialityExcel(file);
-      const flat = flattenMateriality(parsed);
-      setData(flat.map((d, i) => ({ id: i + 1, ...d })));
-      setLoading(false);
       onImportComplete();
     } catch (err) {
-      console.error("Error loading test Excel file:", err);
-      setLoading(false);
+      console.error("Error loading test Excel files:", err);
     }
+    setLoading(false);
   };
 
   return (
     <Stack direction="row" spacing={2} sx={{ my: 2 }}>
       <Button variant="contained" component="label">
-        Upload Excel File
+        Upload Inside-Out
         <input
           type="file"
           hidden
-          onChange={handleFileUpload}
+          onChange={(e) => handleFileUpload(e, setDataInsideOut)}
+          accept=".xlsx,.xls"
+        />
+      </Button>
+
+      <Button variant="contained" component="label">
+        Upload Outside-In
+        <input
+          type="file"
+          hidden
+          onChange={(e) => handleFileUpload(e, setDataOutsideIn)}
           accept=".xlsx,.xls"
         />
       </Button>
 
       <Button
         variant="outlined"
-        disabled={!data.length}
+        disabled={!dataInsideOut.length}
         onClick={() => {
-          const exportData = data.map(({ id, ...rest }) => rest);
+          const exportData = dataInsideOut.map(({ id, ...rest }) => rest);
           const worksheet = XLSX.utils.json_to_sheet(exportData);
           const workbook = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(workbook, worksheet, "Materiality");
-          XLSX.writeFile(workbook, "materiality_updated.xlsx");
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Inside-Out");
+          XLSX.writeFile(workbook, "inside_out.xlsx");
         }}
       >
-        Download Excel
+        Download Inside-Out
       </Button>
 
-      <Button variant="outlined" onClick={loadTestFile}>
-        Load Test Excel
+      <Button
+        variant="outlined"
+        disabled={!dataOutsideIn.length}
+        onClick={() => {
+          const exportData = dataOutsideIn.map(({ id, ...rest }) => rest);
+          const worksheet = XLSX.utils.json_to_sheet(exportData);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Outside-In");
+          XLSX.writeFile(workbook, "outside_in.xlsx");
+        }}
+      >
+        Download Outside-In
+      </Button>
+
+      <Button variant="outlined" onClick={loadTestFiles}>
+        Load Test Files
       </Button>
 
       {loading && <CircularProgress size={24} color="primary" sx={{ mt: 1 }} />}
