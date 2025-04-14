@@ -52,3 +52,9 @@ export default tseslint.config({
 # Resources
 
 https://dbdiagram.io/d/67d2a49075d75cc844ef7ac4
+
+# red means you have to do something
+
+# Green is ok
+
+# Assigned no need
