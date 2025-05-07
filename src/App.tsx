@@ -131,13 +131,13 @@ const App: React.FC = () => {
           <Route path="/auditing" element={<Auditing />} />
           <Route path="/publication" element={<Publication />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route
+          {/* <Route
             path="/materiality-analysis"
             element={<MaterialityAnalysis />}
-          />
+          /> */}
 
           <Route
-            path="/materiality-analysis-uploader"
+            path="/materiality-analysis"
             element={<MaterialityUploader />}
           />
 

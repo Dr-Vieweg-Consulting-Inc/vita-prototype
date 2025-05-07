@@ -46,4 +46,5 @@ export interface UserState {
   loading: boolean;
   error: string | null;
   status: UserStatus | null;
+  activeEntityId: number | null;
 }

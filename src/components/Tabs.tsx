@@ -4,6 +4,7 @@ interface Props {
   value: number;
   onChange: (value: number) => void;
   labels: string[];
+  disabled?: string[];
 }
 
 export function Tabs(props: Props) {
@@ -21,6 +22,7 @@ export function Tabs(props: Props) {
             "&.Mui-selected": { outline: "none" },
             "&:focus": { outline: "none" },
           }}
+          disabled={props.disabled?.some((label) => label === item)}
         />
       ))}
     </MUITabs>

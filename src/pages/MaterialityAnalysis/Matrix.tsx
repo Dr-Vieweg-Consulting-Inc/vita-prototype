@@ -19,6 +19,7 @@ interface Props {
 export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [filterSource, setFilterSource] = useState<string>("All");
+  const [selectedStakeholder, setSelectedStakeholder] = useState<string>("All");
 
   const combinedData = [
     ...(filterSource === "All" || filterSource === "Inside-Out"
@@ -48,6 +49,7 @@ export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
           <option value="Inside-Out">Inside-Out</option>
           <option value="Outside-In">Outside-In</option>
         </TextField>
+
         <TextField
           select
           label="Filter ESG Category"
@@ -62,6 +64,21 @@ export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
           <option value="E">Environment (E)</option>
           <option value="S">Social (S)</option>
           <option value="G">Governance (G)</option>
+        </TextField>
+
+        <TextField
+          select
+          label="Stakeholder"
+          value={selectedStakeholder}
+          onChange={(e) => setSelectedStakeholder(e.target.value)}
+          SelectProps={{ native: true }}
+          sx={{ width: 200 }}
+        >
+          <option value="All">All</option>
+          <option value="Investor">Investor</option>
+          <option value="Customer">Customer</option>
+          <option value="Employee">Employee</option>
+          <option value="Regulator">Regulator</option>
         </TextField>
       </Stack>
 
@@ -101,6 +118,9 @@ export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const d = payload[0].payload;
+
+                  console.log("show the d -------> ", d);
+
                   return (
                     <Paper sx={{ p: 1 }}>
                       <Typography variant="subtitle2">
@@ -115,6 +135,7 @@ export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
                       <div>
                         Stakeholder Importance: {d["Stakeholder Importance"]}
                       </div>
+                      <div>Stakeholder: {d["Stakeholder"]}</div>
                     </Paper>
                   );
                 }
@@ -131,7 +152,9 @@ export function Matrix({ dataInsideOut, dataOutsideIn }: Props) {
                     d["Impact Score"] != null &&
                     d["Financial Risk"] != null &&
                     d["Stakeholder Importance"] != null &&
-                    (!filterCategory || d.ESRS?.startsWith(filterCategory))
+                    (!filterCategory || d.ESRS?.startsWith(filterCategory)) &&
+                    (selectedStakeholder === "All" ||
+                      d.Stakeholder === selectedStakeholder)
                 )}
                 fill={["#1976d2", "#d32f2f", "#388e3c"][idx]}
               />

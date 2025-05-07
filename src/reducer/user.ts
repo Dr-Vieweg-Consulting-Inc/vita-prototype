@@ -13,6 +13,7 @@ const initialState: UserState = {
   loading: false,
   error: null,
   status: null,
+  activeEntityId: null,
 };
 
 // const initialState: UserState = {
@@ -50,6 +51,10 @@ const userSlice = createSlice({
       return {
         ...state,
         ...action.payload,
+        // TODO: Let server decide active entity id
+        activeEntityId: Math.min(
+          ...action.payload.entities.map((entity) => entity.id)
+        ),
         isAuthenticated: true,
         loading: false,
       };

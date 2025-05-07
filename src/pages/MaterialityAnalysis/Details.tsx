@@ -63,6 +63,29 @@ export function DataPoints({
       setData((prev) =>
         prev.map((item) => (item.id === form.id ? { ...item, ...form } : item))
       );
+
+      console.log("show the submission!!!!!!!", form);
+
+      const { ["Main Topic"]: a, ["Subtopic"]: b, ...essential } = form;
+
+      console.log("updating this id: ", form.topic_id, form);
+
+      fetch(`http://localhost:3005/api/materiality/score/${form.score_id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          extent: 4.5,
+          scope: 3.0,
+          justification: "Updated after stakeholder review",
+          is_significant: true,
+          ...form,
+        }),
+      })
+        // .then((res) => res.json())
+        .then((data) => console.log("Success:", data))
+        .catch((err) => console.error("Error:", err));
     }
     setForm(null);
   };
