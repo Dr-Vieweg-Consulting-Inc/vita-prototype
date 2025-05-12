@@ -46,6 +46,11 @@ interface Props {
 
 const statusGlobalArr: string[] = [];
 
+const API_BASE_URL =
+  import.meta.env.MODE === "development"
+    ? "http://localhost:3005"
+    : "https://express-prototype.onrender.com";
+
 export function DataPoints({
   dataInsideOut,
   setDataInsideOut,

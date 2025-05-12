@@ -55,13 +55,13 @@ export function Navbar() {
       sx={{ width: "100%" }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
           <img src="logos/full.png" alt="ESG Logo" style={{ height: "40px" }} />
           <Typography variant="h6">ESG Reporting Accelerator</Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Button color="inherit" component={Link} to="/entity-config">
+          {/* <Button color="inherit" component={Link} to="/entity-config">
             Entity Config
           </Button>
           <Button color="inherit" component={Link} to="/procedures">
@@ -81,7 +81,7 @@ export function Navbar() {
           </Button>
           <Button color="inherit" component={Link} to="/publication">
             Publication
-          </Button>
+          </Button> */}
 
           <IconButton onClick={handleMenuClick} sx={{ p: 0 }}>
             <Avatar alt="User" src="/avatar.png" />

@@ -56,6 +56,8 @@ const EntityConfig: React.FC = () => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
 
+  const [data, setData] = useState<any>(null);
+
   // Handle Entity Input Change
   const handleChange = (
     e: React.ChangeEvent<{ value: unknown; name?: string }>
@@ -87,15 +89,17 @@ const EntityConfig: React.FC = () => {
   useEffect(() => {
     retrieveEntityDetails(entityId).then((data) => {
       // TODO: Connect retrieved data to front end
-      console.log("show the results: ", data);
+      console.log("show the results: hello", data);
+
+      setData(data);
     });
   }, [entityId]);
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h4" gutterBottom>
+    <Container maxWidth="md" sx={{ mt: 4, p: 2 }}>
+      {/* <Typography variant="h4" gutterBottom>
         Entity Configuration
-      </Typography>
+      </Typography> */}
 
       <Grid container spacing={3}>
         {/* Entity Details */}
@@ -178,7 +182,7 @@ const EntityConfig: React.FC = () => {
         </Grid>
 
         {/* Members Management */}
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Paper sx={{ padding: 3 }}>
             <Typography variant="h6">Members</Typography>
             <List>
@@ -205,15 +209,15 @@ const EntityConfig: React.FC = () => {
               Invite Member
             </Button>
           </Paper>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       {/* Save & Cancel Buttons */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-        <Button variant="outlined" sx={{ mr: 2 }}>
+        <Button variant="outlined" sx={{ mr: 2 }} disabled>
           Cancel
         </Button>
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" disabled>
           Save Changes
         </Button>
       </Box>

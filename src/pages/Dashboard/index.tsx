@@ -1,39 +1,40 @@
 import React, { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
+  // AppBar,
+  // Toolbar,
   Typography,
-  Select,
-  MenuItem,
+  // Select,
+  // MenuItem,
   Container,
-  Grid,
-  Paper,
-  Button,
-  Box,
+  // Grid,
+  // Paper,
+  // Button,
+  // Box,
   // Tabs,
   // Tab,
-  TextField,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Menu,
+  // TextField,
+  // IconButton,
+  // List,
+  // ListItem,
+  // ListItemText,
+  // ListItemSecondaryAction,
+  // Menu,
 } from "@mui/material";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+// import {
+//   BarChart,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   Tooltip,
+//   ResponsiveContainer,
+//   CartesianGrid,
+// } from "recharts";
+// import PersonAddIcon from "@mui/icons-material/PersonAdd";
+// import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Members } from "./Members";
 import { Overview } from "./Overview";
 import { Tabs } from "../../components";
+import EntityConfig from "../EntityConfig";
 
 const dummyEntities = [
   { id: 1, name: "Company A" },
@@ -68,6 +69,7 @@ const Dashboard: React.FC = () => {
   const [selectedEntity, setSelectedEntity] = useState<number>(
     dummyEntities[0].id
   );
+
   const [tabIndex, setTabIndex] = useState<number>(0);
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [inviteName, setInviteName] = useState<string>("");
@@ -110,9 +112,13 @@ const Dashboard: React.FC = () => {
   }));
 
   return (
-    <Container>
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Dashboard
+      </Typography>
+
       {/* Top Bar */}
-      <AppBar position="static">
+      {/* <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             ESG Reporting Accelerator
@@ -129,7 +135,7 @@ const Dashboard: React.FC = () => {
             ))}
           </Select>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
 
       {/* Tabs */}
       {/* <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mt: 2 }}>
@@ -152,12 +158,21 @@ const Dashboard: React.FC = () => {
       <Tabs
         value={tabIndex}
         onChange={(value) => setTabIndex(value)}
-        labels={["Overview", "Members"]}
+        labels={["Overview", "Entity", "Members"]}
       />
 
-      {tabIndex === 0 && <Overview />}
-
-      {tabIndex === 1 && <Members />}
+      {(() => {
+        switch (tabIndex) {
+          case 0:
+            return <Overview />;
+          case 1:
+            return <EntityConfig />;
+          case 2:
+            return <Members />;
+          default:
+            return null;
+        }
+      })()}
     </Container>
   );
 };
